@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp } from "lucide-react";
+import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import MascotBubble from "@/components/MascotBubble";
 
 interface Alarm {
   id: number;
   label: string;
-  time: string;
+  hour: number;
+  minute: number;
   buffer: number;
   syncWith: string | null;
   enabled: boolean;
@@ -17,10 +18,225 @@ interface Alarm {
 const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
 
 const initialAlarms: Alarm[] = [
-  { id: 1, label: "Math Exam Prep", time: "08:00", buffer: 60, syncWith: "Alex", enabled: true, days: ["M", "W", "F"] },
-  { id: 2, label: "Essay Deadline", time: "14:30", buffer: 30, syncWith: null, enabled: true, days: ["T"] },
-  { id: 3, label: "Study Group", time: "19:00", buffer: 45, syncWith: "Crew", enabled: false, days: ["M", "T", "W", "T", "F"] },
+  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["M", "W", "F"] },
+  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["T"] },
+  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["M", "T", "W", "T", "F"] },
 ];
+
+const formatTime = (h: number, m: number) =>
+  `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+
+const DIAL_SIZE = 200;
+const KNOB_R = 80;
+
+const TimeDial = ({
+  hour,
+  minute,
+  onChange,
+}: {
+  hour: number;
+  minute: number;
+  onChange: (h: number, m: number) => void;
+}) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const dragging = useRef<"hour" | "minute" | null>(null);
+
+  const center = DIAL_SIZE / 2;
+  const hourAngle = ((hour % 12) / 12) * 360 - 90;
+  const minuteAngle = (minute / 60) * 360 - 90;
+
+  const hourX = center + Math.cos((hourAngle * Math.PI) / 180) * (KNOB_R - 20);
+  const hourY = center + Math.sin((hourAngle * Math.PI) / 180) * (KNOB_R - 20);
+  const minX = center + Math.cos((minuteAngle * Math.PI) / 180) * KNOB_R;
+  const minY = center + Math.sin((minuteAngle * Math.PI) / 180) * KNOB_R;
+
+  const getAngleFromEvent = useCallback(
+    (e: React.PointerEvent | PointerEvent) => {
+      const svg = svgRef.current;
+      if (!svg) return 0;
+      const rect = svg.getBoundingClientRect();
+      const x = e.clientX - rect.left - center;
+      const y = e.clientY - rect.top - center;
+      let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+      if (angle < 0) angle += 360;
+      return angle;
+    },
+    [center]
+  );
+
+  const handlePointerDown = (type: "hour" | "minute") => (e: React.PointerEvent) => {
+    e.preventDefault();
+    dragging.current = type;
+    (e.target as Element).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const angle = getAngleFromEvent(e);
+    if (dragging.current === "hour") {
+      const newHour = Math.round((angle / 360) * 12) % 12;
+      onChange(hour >= 12 ? newHour + 12 : newHour, minute);
+    } else {
+      const newMin = Math.round((angle / 360) * 60) % 60;
+      onChange(hour, newMin);
+    }
+  };
+
+  const handlePointerUp = () => {
+    dragging.current = null;
+  };
+
+  const isPM = hour >= 12;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex items-center gap-3">
+        <span className="text-3xl font-bold text-foreground tabular-nums">{formatTime(hour, minute)}</span>
+        <button
+          onClick={() => onChange(isPM ? hour - 12 : hour + 12, minute)}
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+            isPM ? "bg-accent/20 text-accent-foreground" : "bg-primary/15 text-primary"
+          }`}
+        >
+          {isPM ? "PM" : "AM"}
+        </button>
+      </div>
+      <svg
+        ref={svgRef}
+        width={DIAL_SIZE}
+        height={DIAL_SIZE}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="touch-none"
+      >
+        {/* Background circle */}
+        <circle cx={center} cy={center} r={KNOB_R + 8} fill="none" stroke="hsl(var(--border))" strokeWidth={2} />
+        <circle cx={center} cy={center} r={KNOB_R - 28} fill="none" stroke="hsl(var(--border))" strokeWidth={1} strokeDasharray="4 4" />
+
+        {/* Hour markers */}
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = (i / 12) * 360 - 90;
+          const x = center + Math.cos((a * Math.PI) / 180) * (KNOB_R + 8);
+          const y = center + Math.sin((a * Math.PI) / 180) * (KNOB_R + 8);
+          return (
+            <text
+              key={i}
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="hsl(var(--muted-foreground))"
+              fontSize={10}
+              fontWeight={600}
+            >
+              {i === 0 ? 12 : i}
+            </text>
+          );
+        })}
+
+        {/* Hour hand */}
+        <line x1={center} y1={center} x2={hourX} y2={hourY} stroke="hsl(var(--primary))" strokeWidth={3} strokeLinecap="round" />
+        {/* Minute hand */}
+        <line x1={center} y1={center} x2={minX} y2={minY} stroke="hsl(var(--secondary))" strokeWidth={2} strokeLinecap="round" />
+
+        {/* Center dot */}
+        <circle cx={center} cy={center} r={4} fill="hsl(var(--foreground))" />
+
+        {/* Hour knob */}
+        <circle
+          cx={hourX}
+          cy={hourY}
+          r={12}
+          fill="hsl(var(--primary))"
+          stroke="hsl(var(--card))"
+          strokeWidth={3}
+          onPointerDown={handlePointerDown("hour")}
+          className="cursor-grab active:cursor-grabbing"
+        />
+        {/* Minute knob */}
+        <circle
+          cx={minX}
+          cy={minY}
+          r={10}
+          fill="hsl(var(--secondary))"
+          stroke="hsl(var(--card))"
+          strokeWidth={3}
+          onPointerDown={handlePointerDown("minute")}
+          className="cursor-grab active:cursor-grabbing"
+        />
+      </svg>
+      <div className="flex gap-3 text-[10px] font-semibold">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" /> Hour</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-secondary" /> Minute</span>
+      </div>
+    </div>
+  );
+};
+
+const BufferSlider = ({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const handleDrag = (e: React.PointerEvent) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    onChange(Math.round(5 + pct * 115));
+  };
+
+  const startDrag = (e: React.PointerEvent) => {
+    (e.target as Element).setPointerCapture(e.pointerId);
+  };
+
+  return (
+    <div>
+      <p className="text-xs font-semibold text-muted-foreground mb-2">
+        Adaptive Buffer: <span className="text-foreground">{value} min before deadline</span>
+      </p>
+      <div
+        ref={trackRef}
+        className="relative h-8 flex items-center cursor-pointer"
+        onPointerMove={(e) => {
+          if (e.buttons > 0) handleDrag(e);
+        }}
+        onClick={(e) => {
+          const track = trackRef.current;
+          if (!track) return;
+          const rect = track.getBoundingClientRect();
+          const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+          onChange(Math.round(5 + pct * 115));
+        }}
+      >
+        <div className="absolute inset-y-3 left-0 right-0 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-[width] duration-75"
+            style={{ width: `${((value - 5) / 115) * 100}%` }}
+          />
+        </div>
+        <motion.div
+          className="absolute top-1 w-6 h-6 rounded-full bg-card border-2 border-primary shadow-lg cursor-grab active:cursor-grabbing touch-none"
+          style={{ left: `calc(${((value - 5) / 115) * 100}% - 12px)` }}
+          onPointerDown={startDrag}
+          onPointerMove={(e) => {
+            if (e.buttons > 0) handleDrag(e);
+          }}
+          whileTap={{ scale: 1.2 }}
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground font-semibold mt-0.5">
+        <span>5 min</span>
+        <span>1 hr</span>
+        <span>2 hr</span>
+      </div>
+    </div>
+  );
+};
 
 const AlarmPage = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -31,10 +247,18 @@ const AlarmPage = () => {
   const toggleAlarm = (id: number) =>
     setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)));
 
-  const updateBuffer = (id: number, delta: number) =>
+  const updateTime = (id: number, h: number, m: number) =>
+    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, hour: h, minute: m } : a)));
+
+  const updateBuffer = (id: number, v: number) =>
+    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, buffer: v } : a)));
+
+  const toggleDay = (id: number, day: string) =>
     setAlarms((prev) =>
       prev.map((a) =>
-        a.id === id ? { ...a, buffer: Math.max(5, Math.min(120, a.buffer + delta)) } : a
+        a.id === id
+          ? { ...a, days: a.days.includes(day) ? a.days.filter((d) => d !== day) : [...a.days, day] }
+          : a
       )
     );
 
@@ -44,7 +268,7 @@ const AlarmPage = () => {
     const newId = Math.max(0, ...alarms.map((a) => a.id)) + 1;
     setAlarms((prev) => [
       ...prev,
-      { id: newId, label: "New Alarm", time: "12:00", buffer: 60, syncWith: null, enabled: true, days: [] },
+      { id: newId, label: "New Alarm", hour: 12, minute: 0, buffer: 60, syncWith: null, enabled: true, days: [] },
     ]);
     setExpandedId(newId);
   };
@@ -59,7 +283,7 @@ const AlarmPage = () => {
       </div>
 
       <div className="px-6 mt-2">
-        <MascotBubble message="Set your alarms and I'll make sure you AND your friends wake up on time! ⏰" />
+        <MascotBubble message="Drag the clock hands to set your time! Slide the buffer to adjust how early you get reminded ⏰" />
       </div>
 
       {/* Calendar */}
@@ -114,7 +338,7 @@ const AlarmPage = () => {
                   <AlarmClock className={`w-5 h-5 ${alarm.enabled ? "text-primary" : "text-muted-foreground"}`} />
                   <div>
                     <p className="text-sm font-bold text-foreground">{alarm.label}</p>
-                    <p className="text-2xl font-bold text-foreground leading-tight">{alarm.time}</p>
+                    <p className="text-2xl font-bold text-foreground leading-tight">{formatTime(alarm.hour, alarm.minute)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -150,7 +374,14 @@ const AlarmPage = () => {
                     exit={{ height: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
+                    <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+                      {/* Draggable clock dial */}
+                      <TimeDial
+                        hour={alarm.hour}
+                        minute={alarm.minute}
+                        onChange={(h, m) => updateTime(alarm.id, h, m)}
+                      />
+
                       {/* Days */}
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground mb-1.5">Repeat</p>
@@ -158,6 +389,7 @@ const AlarmPage = () => {
                           {dayLabels.map((d, i) => (
                             <button
                               key={i}
+                              onClick={() => toggleDay(alarm.id, d)}
                               className={`w-8 h-8 rounded-full text-xs font-bold transition-colors ${
                                 alarm.days.includes(d)
                                   ? "bg-primary text-primary-foreground"
@@ -170,32 +402,11 @@ const AlarmPage = () => {
                         </div>
                       </div>
 
-                      {/* Buffer */}
-                      <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1.5">
-                          Adaptive Buffer: <span className="text-foreground">{alarm.buffer} min before deadline</span>
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateBuffer(alarm.id, -5)}
-                            className="w-8 h-8 rounded-full bg-muted text-foreground font-bold text-sm"
-                          >
-                            −
-                          </button>
-                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary rounded-full transition-all"
-                              style={{ width: `${(alarm.buffer / 120) * 100}%` }}
-                            />
-                          </div>
-                          <button
-                            onClick={() => updateBuffer(alarm.id, 5)}
-                            className="w-8 h-8 rounded-full bg-muted text-foreground font-bold text-sm"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
+                      {/* Draggable Buffer slider */}
+                      <BufferSlider
+                        value={alarm.buffer}
+                        onChange={(v) => updateBuffer(alarm.id, v)}
+                      />
 
                       {/* Sync info */}
                       <div className="flex items-center justify-between">
