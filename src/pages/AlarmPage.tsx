@@ -205,7 +205,13 @@ const BufferSlider = ({
         onPointerMove={(e) => {
           if (e.buttons > 0) handleDrag(e);
         }}
-        onClick={handleDrag}
+        onClick={(e) => {
+          const track = trackRef.current;
+          if (!track) return;
+          const rect = track.getBoundingClientRect();
+          const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+          onChange(Math.round(5 + pct * 115));
+        }}
       >
         <div className="absolute inset-y-3 left-0 right-0 bg-muted rounded-full overflow-hidden">
           <div
