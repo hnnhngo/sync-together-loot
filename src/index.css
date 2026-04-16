@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,34 +6,36 @@
 
 @layer base {
   :root {
-    --background: 40 33% 96%;
-    --foreground: 30 10% 20%;
-    --card: 40 30% 98%;
-    --card-foreground: 30 10% 20%;
-    --popover: 40 30% 98%;
-    --popover-foreground: 30 10% 20%;
-    --primary: 160 25% 45%;
-    --primary-foreground: 40 33% 96%;
-    --secondary: 15 40% 75%;
-    --secondary-foreground: 30 10% 20%;
-    --muted: 40 20% 90%;
-    --muted-foreground: 30 8% 50%;
-    --accent: 210 30% 70%;
-    --accent-foreground: 30 10% 20%;
+    --background: 30 30% 97%;
+    --foreground: 240 10% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 20%;
+    --primary: 340 70% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 60% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 30 20% 92%;
+    --muted-foreground: 240 5% 46%;
+    --accent: 270 40% 72%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 60% 60%;
-    --destructive-foreground: 40 33% 96%;
-    --border: 35 20% 88%;
-    --input: 35 20% 88%;
-    --ring: 160 25% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 15% 90%;
+    --input: 30 15% 90%;
+    --ring: 340 70% 65%;
     --radius: 1rem;
 
+    --syn-pink: 340 70% 75%;
+    --syn-blue: 210 60% 75%;
     --coral: 15 60% 68%;
     --sage: 150 20% 60%;
     --dusty-blue: 210 30% 70%;
-    --lavender: 270 25% 75%;
-    --warm-gold: 40 50% 70%;
-    --cream: 40 33% 96%;
-    --cream-dark: 35 25% 90%;
+    --lavender: 270 35% 78%;
+    --warm-gold: 40 60% 72%;
+    --cream: 30 30% 97%;
+    --cream-dark: 30 20% 90%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -52,9 +54,14 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
   }
   h1, h2, h3, h4 {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
   }
 }
+
+/* hide scrollbar */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -66,8 +66,8 @@ export default {
         },
       },
       fontFamily: {
-        serif: ['"DM Serif Display"', 'serif'],
-        sans: ['"DM Sans"', 'sans-serif'],
+        sans: ['"Nunito"', 'sans-serif'],
+        heading: ['"Quicksand"', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
