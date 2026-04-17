@@ -194,10 +194,10 @@ const HomePage = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Tasks Done", value: "24", color: "pink" as const, shape: "star" as const, mood: "excited" as const, bg: "bg-blob-pink/25" },
-            { label: "Study Hours", value: "18.5h", color: "mint" as const, shape: "round" as const, mood: "happy" as const, bg: "bg-blob-mint/25" },
-            { label: "Crew Rank", value: "#3", color: "yellow" as const, shape: "cloud" as const, mood: "wink" as const, bg: "bg-blob-yellow/30" },
-            { label: "Nudges Sent", value: "12", color: "lavender" as const, shape: "pentagon" as const, mood: "happy" as const, bg: "bg-blob-lavender/25" },
+            { label: "Tasks Done", value: "24", color: "pink" as const, shape: "bunny" as const, mood: "excited" as const, bg: "bg-blob-pink/25" },
+            { label: "Study Hours", value: "18.5h", color: "mint" as const, shape: "frog" as const, mood: "happy" as const, bg: "bg-blob-mint/25" },
+            { label: "Crew Rank", value: "#3", color: "yellow" as const, shape: "chick" as const, mood: "wink" as const, bg: "bg-blob-yellow/30" },
+            { label: "Nudges Sent", value: "12", color: "lavender" as const, shape: "bear" as const, mood: "happy" as const, bg: "bg-blob-lavender/25" },
           ].map((s) => (
             <motion.div
               key={s.label}
