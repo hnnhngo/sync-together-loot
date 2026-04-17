@@ -13,7 +13,7 @@ const Index = () => {
   const Page = pages[activeTab];
 
   return (
-    <div className="min-h-screen bg-background max-w-md mx-auto relative">
+    <div className="min-h-screen max-w-md mx-auto relative bg-background">
       <Page />
       <BottomNav active={activeTab} onTap={setActiveTab} />
     </div>

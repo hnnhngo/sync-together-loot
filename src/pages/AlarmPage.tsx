@@ -277,7 +277,7 @@ const AlarmPage = () => {
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Alarms</h1>
-        <button onClick={addAlarm} className="bg-primary text-primary-foreground rounded-full p-2 shadow-lg shadow-primary/25">
+        <button onClick={addAlarm} className="bg-primary text-primary-foreground rounded-full p-2 shadow-pop">
           <Plus className="w-5 h-5" />
         </button>
       </div>
@@ -302,7 +302,7 @@ const AlarmPage = () => {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-card rounded-2xl border border-border shadow-sm p-2">
+              <div className="bg-card rounded-3xl border border-border shadow-soft p-2">
                 <Calendar
                   mode="single"
                   selected={date}
@@ -316,7 +316,7 @@ const AlarmPage = () => {
       </div>
 
       {/* Alarm List */}
-      <div className="px-6 mt-5 pb-28 flex flex-col gap-3">
+      <div className="px-6 mt-5 pb-32 flex flex-col gap-3">
         <AnimatePresence>
           {alarms.map((alarm) => (
             <motion.div
@@ -325,7 +325,7 @@ const AlarmPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -100 }}
-              className={`bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-colors ${
+              className={`bg-card rounded-3xl border border-border shadow-soft overflow-hidden transition-colors ${
                 !alarm.enabled ? "opacity-60" : ""
               }`}
             >

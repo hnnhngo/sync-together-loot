@@ -6,36 +6,57 @@
 
 @layer base {
   :root {
-    --background: 30 30% 97%;
-    --foreground: 240 10% 20%;
+    /* Habitz-inspired soft cream + lavender + pastel palette */
+    --background: 30 40% 98%;
+    --foreground: 240 15% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 20%;
+    --card-foreground: 240 15% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 20%;
-    --primary: 340 70% 65%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 60% 65%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 30 20% 92%;
-    --muted-foreground: 240 5% 46%;
-    --accent: 270 40% 72%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 60% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 30 15% 90%;
-    --input: 30 15% 90%;
-    --ring: 340 70% 65%;
-    --radius: 1rem;
+    --popover-foreground: 240 15% 18%;
 
-    --syn-pink: 340 70% 75%;
-    --syn-blue: 210 60% 75%;
-    --coral: 15 60% 68%;
-    --sage: 150 20% 60%;
-    --dusty-blue: 210 30% 70%;
-    --lavender: 270 35% 78%;
-    --warm-gold: 40 60% 72%;
-    --cream: 30 30% 97%;
-    --cream-dark: 30 20% 90%;
+    /* Primary: friendly lavender purple */
+    --primary: 265 70% 70%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: soft sky blue */
+    --secondary: 205 70% 75%;
+    --secondary-foreground: 240 15% 18%;
+
+    --muted: 30 25% 94%;
+    --muted-foreground: 240 8% 45%;
+
+    /* Accent: soft pink */
+    --accent: 340 75% 80%;
+    --accent-foreground: 240 15% 18%;
+
+    --destructive: 0 70% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 20% 92%;
+    --input: 30 20% 92%;
+    --ring: 265 70% 70%;
+    --radius: 1.5rem;
+
+    /* Character/blob palette - all pastel */
+    --blob-pink: 340 80% 82%;
+    --blob-blue: 205 70% 78%;
+    --blob-mint: 165 50% 75%;
+    --blob-orange: 25 85% 72%;
+    --blob-yellow: 45 90% 78%;
+    --blob-lavender: 265 60% 82%;
+    --blob-coral: 10 80% 78%;
+    --blob-sage: 145 35% 72%;
+
+    /* Aliases used by existing components */
+    --syn-pink: 340 80% 82%;
+    --syn-blue: 205 70% 78%;
+    --coral: 10 80% 75%;
+    --sage: 145 35% 65%;
+    --dusty-blue: 205 50% 75%;
+    --lavender: 265 60% 80%;
+    --warm-gold: 42 90% 72%;
+    --cream: 30 40% 98%;
+    --cream-dark: 30 25% 92%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -59,9 +80,24 @@
   h1, h2, h3, h4 {
     font-family: 'Quicksand', sans-serif;
     font-weight: 700;
+    letter-spacing: -0.01em;
   }
 }
 
-/* hide scrollbar */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Soft squishy shadows for cards */
+  .shadow-soft {
+    box-shadow: 0 4px 16px -4px hsl(265 50% 70% / 0.12), 0 2px 4px -2px hsl(265 50% 70% / 0.06);
+  }
+  .shadow-pop {
+    box-shadow: 0 8px 24px -6px hsl(265 70% 70% / 0.25);
+  }
+
+  /* Decorative blob shape behind characters */
+  .blob-shape {
+    border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+  }
+}
