@@ -54,6 +54,16 @@ export default {
         "warm-gold": "hsl(var(--warm-gold))",
         cream: "hsl(var(--cream))",
         "cream-dark": "hsl(var(--cream-dark))",
+        blob: {
+          pink: "hsl(var(--blob-pink))",
+          blue: "hsl(var(--blob-blue))",
+          mint: "hsl(var(--blob-mint))",
+          orange: "hsl(var(--blob-orange))",
+          yellow: "hsl(var(--blob-yellow))",
+          lavender: "hsl(var(--blob-lavender))",
+          coral: "hsl(var(--blob-coral))",
+          sage: "hsl(var(--blob-sage))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
