@@ -397,17 +397,18 @@ const AlarmPage = () => {
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground mb-1.5">Repeat</p>
                         <div className="flex gap-1.5">
-                          {dayLabels.map((d, i) => (
+                          {dayList.map((d) => (
                             <button
-                              key={i}
-                              onClick={() => toggleDay(alarm.id, d)}
-                              className={`w-8 h-8 rounded-full text-xs font-bold transition-colors ${
-                                alarm.days.includes(d)
+                              key={d.id}
+                              onClick={() => toggleDay(alarm.id, d.id)}
+                              className={`w-9 h-9 rounded-full text-xs font-bold transition-colors ${
+                                alarm.days.includes(d.id)
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted text-muted-foreground"
                               }`}
+                              aria-label={d.id}
                             >
-                              {d}
+                              {d.label}
                             </button>
                           ))}
                         </div>
