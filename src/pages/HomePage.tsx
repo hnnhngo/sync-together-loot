@@ -69,10 +69,9 @@ const HomePage = () => {
 
         <div className="relative inline-block">
           <BlobChar
-            shape="round"
-            color="blue"
+            isSyn
             mood={synMood}
-            size={140}
+            size={150}
             onClick={handleSynTap}
             label="Tap Syn"
           />

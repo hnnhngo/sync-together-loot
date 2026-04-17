@@ -21,7 +21,8 @@ interface CosmeticItem {
 
 const inventory: CosmeticItem[] = [
   // Shapes (the character's body shape)
-  { id: 100, name: "Round Body", type: "shape", rarity: "Common", equipped: true, visual: "⚪", shape: "round" },
+  { id: 99, name: "Capybara (Syn)", type: "shape", rarity: "Legendary", equipped: true, visual: "🐹", shape: "capybara" },
+  { id: 100, name: "Round Body", type: "shape", rarity: "Common", equipped: false, visual: "⚪", shape: "round" },
   { id: 101, name: "Star Body", type: "shape", rarity: "Rare", equipped: false, visual: "⭐", shape: "star" },
   { id: 102, name: "Cloud Body", type: "shape", rarity: "Rare", equipped: false, visual: "☁️", shape: "cloud" },
   { id: 103, name: "Pentagon Body", type: "shape", rarity: "Legendary", equipped: false, visual: "🔷", shape: "pentagon" },
