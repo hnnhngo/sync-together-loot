@@ -19,14 +19,17 @@ const dailyRewards = [
 ];
 
 const HomePage = () => {
+  const cosmetics = useCosmetics();
   const [streak, setStreak] = useState(3);
   const [points, setPoints] = useState(1250);
   const [showDailyLogin, setShowDailyLogin] = useState(true);
   const [claimedToday, setClaimedToday] = useState(false);
   const [tapCount, setTapCount] = useState(0);
 
-  const tier = Math.min(Math.floor(streak / 2), streakTiers.length - 1);
-  const colors = streakTiers[tier];
+  const tier = Math.min(Math.floor(streak / 2), tierLabels.length - 1);
+  const tierLabel = tierLabels[tier];
+  const tierMood = tierMoods[tier];
+  const streakColor = STREAK_COLORS[cosmetics.streakColor];
 
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
@@ -44,8 +47,16 @@ const HomePage = () => {
   const synMoods = ["happy", "excited", "wink", "happy"] as const;
   const synMood = synMoods[tapCount % synMoods.length];
 
+  // Visual streak: render a row of flame icons, intensity grows with streak
+  const flamesToShow = Math.min(7, streak);
+
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${colors.from} ${colors.to} transition-colors duration-700`}>
+    <div
+      className="min-h-screen transition-colors duration-700"
+      style={{
+        background: `linear-gradient(180deg, ${streakColor.from}33, hsl(var(--background)) 60%)`,
+      }}
+    >
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
         <div>
@@ -60,12 +71,20 @@ const HomePage = () => {
 
       {/* Mascot + Streak */}
       <div className="px-6 pt-6 pb-2 text-center relative">
-        {/* Soft blob backdrop */}
-        <div className="absolute left-1/2 top-2 -translate-x-1/2 w-48 h-48 bg-blob-pink/40 blob-shape" aria-hidden />
+        {/* Soft aura-tinted backdrop */}
+        <div
+          className="absolute left-1/2 top-2 -translate-x-1/2 w-52 h-52 blob-shape opacity-60"
+          style={{ background: `radial-gradient(circle at 40% 40%, ${streakColor.from}, ${streakColor.to}55 70%, transparent)` }}
+          aria-hidden
+        />
 
         <div className="relative inline-block">
           <BlobChar
-            isSyn
+            shape={cosmetics.shape}
+            color={cosmetics.color}
+            hat={cosmetics.hat}
+            outfit={cosmetics.outfit}
+            glasses={cosmetics.glasses}
             mood={synMood}
             size={150}
             onClick={handleSynTap}
@@ -84,16 +103,46 @@ const HomePage = () => {
           )}
         </div>
 
+        {/* Visual streak: flame row that uses the equipped streak color */}
+        <div className="mt-3 flex items-end justify-center gap-1 h-10" aria-label={`${streak} day streak`}>
+          {Array.from({ length: 7 }, (_, i) => {
+            const lit = i < flamesToShow;
+            const sizePx = lit ? 22 + Math.min(i, 4) * 2 : 16;
+            return (
+              <motion.div
+                key={i}
+                initial={false}
+                animate={lit ? { y: [0, -2, 0], scale: [1, 1.05, 1] } : { y: 0, scale: 1 }}
+                transition={lit ? { repeat: Infinity, duration: 1.6 + i * 0.15, ease: "easeInOut" } : {}}
+                style={{
+                  width: sizePx,
+                  height: sizePx,
+                  background: lit
+                    ? `linear-gradient(180deg, ${streakColor.from}, ${streakColor.to})`
+                    : "hsl(var(--muted))",
+                  WebkitMaskImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2c1 4 5 5 5 10a5 5 0 1 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z'/></svg>\")",
+                  maskImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2c1 4 5 5 5 10a5 5 0 1 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z'/></svg>\")",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskSize: "contain",
+                  maskSize: "contain",
+                  opacity: lit ? 1 : 0.35,
+                }}
+              />
+            );
+          })}
+        </div>
+
         <motion.div
           key={streak}
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="inline-flex items-center gap-2 bg-card rounded-full px-4 py-2 shadow-soft border border-border mt-2"
         >
-          <Flame className={`w-5 h-5 ${colors.accent}`} />
+          <Flame className={`w-5 h-5 ${streakColor.flameClass}`} fill="currentColor" />
           <p className="text-xl font-bold text-foreground leading-none">{streak}</p>
           <span className="text-xs font-bold text-muted-foreground">day streak</span>
-          <span className={`text-xs font-bold ${colors.accent}`}>· {colors.label}</span>
+          <span className={`text-xs font-bold ${streakColor.flameClass}`}>· {tierLabel}</span>
         </motion.div>
       </div>
 
