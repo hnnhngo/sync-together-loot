@@ -192,24 +192,63 @@ const BufferSlider = ({
   onChange: (v: number) => void;
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
+  const [text, setText] = useState(String(value));
+
+  // keep local text in sync when slider drives changes
+  if (text !== String(value) && document.activeElement?.tagName !== "INPUT") {
+    // intentional: avoid effect just for mirror-state
+  }
+
+  const clamp = (n: number) => Math.max(1, Math.min(720, n));
+
+  const setBoth = (n: number) => {
+    const v = clamp(n);
+    onChange(v);
+    setText(String(v));
+  };
 
   const handleDrag = (e: React.PointerEvent) => {
     const track = trackRef.current;
     if (!track) return;
     const rect = track.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    onChange(Math.round(5 + pct * 115));
+    setBoth(Math.round(5 + pct * 115));
   };
 
   const startDrag = (e: React.PointerEvent) => {
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
+  const sliderPct = Math.max(0, Math.min(100, ((value - 5) / 115) * 100));
+
   return (
     <div>
-      <p className="text-xs font-semibold text-muted-foreground mb-2">
-        Adaptive Buffer: <span className="text-foreground">{value} min before deadline</span>
-      </p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold text-muted-foreground">Adaptive Buffer</p>
+        <div className="flex items-center gap-1">
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={720}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={() => {
+              const n = parseInt(text, 10);
+              if (!Number.isFinite(n)) {
+                setText(String(value));
+              } else {
+                setBoth(n);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur();
+            }}
+            className="w-16 h-8 text-center text-sm font-bold rounded-xl"
+          />
+          <span className="text-xs font-bold text-muted-foreground">min</span>
+        </div>
+      </div>
       <div
         ref={trackRef}
         className="relative h-8 flex items-center cursor-pointer"
@@ -221,18 +260,18 @@ const BufferSlider = ({
           if (!track) return;
           const rect = track.getBoundingClientRect();
           const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-          onChange(Math.round(5 + pct * 115));
+          setBoth(Math.round(5 + pct * 115));
         }}
       >
         <div className="absolute inset-y-3 left-0 right-0 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-[width] duration-75"
-            style={{ width: `${((value - 5) / 115) * 100}%` }}
+            style={{ width: `${sliderPct}%` }}
           />
         </div>
         <motion.div
           className="absolute top-1 w-6 h-6 rounded-full bg-card border-2 border-primary shadow-lg cursor-grab active:cursor-grabbing touch-none"
-          style={{ left: `calc(${((value - 5) / 115) * 100}% - 12px)` }}
+          style={{ left: `calc(${sliderPct}% - 12px)` }}
           onPointerDown={startDrag}
           onPointerMove={(e) => {
             if (e.buttons > 0) handleDrag(e);
@@ -245,6 +284,9 @@ const BufferSlider = ({
         <span>1 hr</span>
         <span>2 hr</span>
       </div>
+      <p className="text-[10px] text-muted-foreground font-semibold mt-1">
+        Type any value 1–720 min, or drag the slider for 5–120 min.
+      </p>
     </div>
   );
 };
