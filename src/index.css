@@ -37,15 +37,15 @@
     --ring: 265 70% 70%;
     --radius: 1.5rem;
 
-    /* Character/blob palette - all pastel */
-    --blob-pink: 340 80% 82%;
-    --blob-blue: 205 70% 78%;
-    --blob-mint: 165 50% 75%;
-    --blob-orange: 25 85% 72%;
-    --blob-yellow: 45 90% 78%;
-    --blob-lavender: 265 60% 82%;
-    --blob-coral: 10 80% 78%;
-    --blob-sage: 145 35% 72%;
+    /* Character/blob palette - all soft, gentle pastels in the same family */
+    --blob-pink: 345 75% 86%;
+    --blob-blue: 205 60% 82%;
+    --blob-mint: 160 45% 82%;
+    --blob-orange: 25 75% 84%;
+    --blob-yellow: 45 80% 86%;
+    --blob-lavender: 270 55% 86%;
+    --blob-coral: 10 70% 84%;
+    --blob-sage: 145 35% 80%;
 
     /* Aliases used by existing components */
     --syn-pink: 340 80% 82%;

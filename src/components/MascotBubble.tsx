@@ -16,8 +16,8 @@ const MascotBubble = ({ message, direction = "left", mood = "happy" }: MascotBub
     className={`flex items-end gap-2 ${direction === "right" ? "flex-row-reverse" : ""}`}
   >
     <div className="relative flex-shrink-0">
-      <div className="absolute inset-0 bg-blob-pink/50 blob-shape -z-10 scale-110" aria-hidden />
-      <BlobChar shape="round" color="blue" mood={mood} size={56} />
+      <div className="absolute inset-0 bg-blob-pink/40 blob-shape -z-10 scale-110" aria-hidden />
+      <BlobChar isSyn mood={mood} size={60} />
     </div>
     <div
       className={`bg-card rounded-3xl px-4 py-3 shadow-soft border border-border max-w-[78%] ${
