@@ -1,8 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
+import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import MascotBubble from "@/components/MascotBubble";
+
+type DayId = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 interface Alarm {
   id: number;
@@ -12,15 +15,23 @@ interface Alarm {
   buffer: number;
   syncWith: string | null;
   enabled: boolean;
-  days: string[];
+  days: DayId[];
 }
 
-const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+const dayList: { id: DayId; label: string }[] = [
+  { id: "mon", label: "M" },
+  { id: "tue", label: "T" },
+  { id: "wed", label: "W" },
+  { id: "thu", label: "T" },
+  { id: "fri", label: "F" },
+  { id: "sat", label: "S" },
+  { id: "sun", label: "S" },
+];
 
 const initialAlarms: Alarm[] = [
-  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["M", "W", "F"] },
-  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["T"] },
-  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["M", "T", "W", "T", "F"] },
+  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["mon", "wed", "fri"] },
+  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["tue"] },
+  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["mon", "tue", "wed", "thu", "fri"] },
 ];
 
 const formatTime = (h: number, m: number) =>
@@ -181,24 +192,63 @@ const BufferSlider = ({
   onChange: (v: number) => void;
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
+  const [text, setText] = useState(String(value));
+
+  // keep local text in sync when slider drives changes
+  if (text !== String(value) && document.activeElement?.tagName !== "INPUT") {
+    // intentional: avoid effect just for mirror-state
+  }
+
+  const clamp = (n: number) => Math.max(1, Math.min(720, n));
+
+  const setBoth = (n: number) => {
+    const v = clamp(n);
+    onChange(v);
+    setText(String(v));
+  };
 
   const handleDrag = (e: React.PointerEvent) => {
     const track = trackRef.current;
     if (!track) return;
     const rect = track.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    onChange(Math.round(5 + pct * 115));
+    setBoth(Math.round(5 + pct * 115));
   };
 
   const startDrag = (e: React.PointerEvent) => {
     (e.target as Element).setPointerCapture(e.pointerId);
   };
 
+  const sliderPct = Math.max(0, Math.min(100, ((value - 5) / 115) * 100));
+
   return (
     <div>
-      <p className="text-xs font-semibold text-muted-foreground mb-2">
-        Adaptive Buffer: <span className="text-foreground">{value} min before deadline</span>
-      </p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold text-muted-foreground">Adaptive Buffer</p>
+        <div className="flex items-center gap-1">
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={720}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={() => {
+              const n = parseInt(text, 10);
+              if (!Number.isFinite(n)) {
+                setText(String(value));
+              } else {
+                setBoth(n);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur();
+            }}
+            className="w-16 h-8 text-center text-sm font-bold rounded-xl"
+          />
+          <span className="text-xs font-bold text-muted-foreground">min</span>
+        </div>
+      </div>
       <div
         ref={trackRef}
         className="relative h-8 flex items-center cursor-pointer"
@@ -210,18 +260,18 @@ const BufferSlider = ({
           if (!track) return;
           const rect = track.getBoundingClientRect();
           const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-          onChange(Math.round(5 + pct * 115));
+          setBoth(Math.round(5 + pct * 115));
         }}
       >
         <div className="absolute inset-y-3 left-0 right-0 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-[width] duration-75"
-            style={{ width: `${((value - 5) / 115) * 100}%` }}
+            style={{ width: `${sliderPct}%` }}
           />
         </div>
         <motion.div
           className="absolute top-1 w-6 h-6 rounded-full bg-card border-2 border-primary shadow-lg cursor-grab active:cursor-grabbing touch-none"
-          style={{ left: `calc(${((value - 5) / 115) * 100}% - 12px)` }}
+          style={{ left: `calc(${sliderPct}% - 12px)` }}
           onPointerDown={startDrag}
           onPointerMove={(e) => {
             if (e.buttons > 0) handleDrag(e);
@@ -234,6 +284,9 @@ const BufferSlider = ({
         <span>1 hr</span>
         <span>2 hr</span>
       </div>
+      <p className="text-[10px] text-muted-foreground font-semibold mt-1">
+        Type any value 1–720 min, or drag the slider for 5–120 min.
+      </p>
     </div>
   );
 };
@@ -253,7 +306,7 @@ const AlarmPage = () => {
   const updateBuffer = (id: number, v: number) =>
     setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, buffer: v } : a)));
 
-  const toggleDay = (id: number, day: string) =>
+  const toggleDay = (id: number, day: DayId) =>
     setAlarms((prev) =>
       prev.map((a) =>
         a.id === id
@@ -386,17 +439,18 @@ const AlarmPage = () => {
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground mb-1.5">Repeat</p>
                         <div className="flex gap-1.5">
-                          {dayLabels.map((d, i) => (
+                          {dayList.map((d) => (
                             <button
-                              key={i}
-                              onClick={() => toggleDay(alarm.id, d)}
-                              className={`w-8 h-8 rounded-full text-xs font-bold transition-colors ${
-                                alarm.days.includes(d)
+                              key={d.id}
+                              onClick={() => toggleDay(alarm.id, d.id)}
+                              className={`w-9 h-9 rounded-full text-xs font-bold transition-colors ${
+                                alarm.days.includes(d.id)
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted text-muted-foreground"
                               }`}
+                              aria-label={d.id}
                             >
-                              {d}
+                              {d.label}
                             </button>
                           ))}
                         </div>

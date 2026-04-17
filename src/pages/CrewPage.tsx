@@ -38,29 +38,29 @@ interface StudyGroup {
 }
 
 const friends: Friend[] = [
-  { id: 1, name: "Alex", shape: "star", color: "pink", mood: "excited", status: "studying", streak: 12, level: 24, studyHours: 156, cosmetics: { aura: "Ember Aura 🔥", frame: "Phoenix Frame", accessory: "Neon Halo 💜" }, bio: "Math major grinding for finals" },
-  { id: 2, name: "Jordan", shape: "round", color: "lavender", mood: "sleepy", status: "idle", streak: 5, level: 18, studyHours: 89, cosmetics: { aura: "Blossom Aura 🌸", frame: "—", accessory: "Petal Crown 🌺" }, bio: "CS student. Always debugging." },
-  { id: 3, name: "Sam", shape: "triangle", color: "mint", mood: "happy", status: "studying", streak: 8, level: 21, studyHours: 134, cosmetics: { aura: "—", frame: "Vine Frame 🌿", accessory: "Pixel Shades 🟪" }, bio: "Bio major & coffee addict ☕" },
-  { id: 4, name: "Taylor", shape: "cloud", color: "yellow", mood: "wink", status: "offline", streak: 2, level: 12, studyHours: 45, cosmetics: { aura: "—", frame: "—", accessory: "—" }, bio: "Art student vibing" },
-  { id: 5, name: "Morgan", shape: "pentagon", color: "orange", mood: "happy", status: "idle", streak: 15, level: 30, studyHours: 210, cosmetics: { aura: "Neon Halo 💜", frame: "Phoenix Frame 🦅", accessory: "Inferno Crown 👑" }, bio: "Top of the leaderboard 👑" },
+  { id: 1, name: "Alex", shape: "fox", color: "pink", mood: "excited", status: "studying", streak: 12, level: 24, studyHours: 156, cosmetics: { aura: "Ember Streak", frame: "Phoenix Frame", accessory: "Crown Hat" }, bio: "Math major grinding for finals" },
+  { id: 2, name: "Jordan", shape: "bunny", color: "lavender", mood: "sleepy", status: "idle", streak: 5, level: 18, studyHours: 89, cosmetics: { aura: "Rose Streak", frame: "—", accessory: "Flower Crown" }, bio: "CS student. Always debugging." },
+  { id: 3, name: "Sam", shape: "frog", color: "mint", mood: "happy", status: "studying", streak: 8, level: 21, studyHours: 134, cosmetics: { aura: "Emerald Streak", frame: "Vine Frame", accessory: "Round Glasses" }, bio: "Bio major & coffee addict" },
+  { id: 4, name: "Taylor", shape: "chick", color: "yellow", mood: "wink", status: "offline", streak: 2, level: 12, studyHours: 45, cosmetics: { aura: "—", frame: "—", accessory: "Bowtie" }, bio: "Art student vibing" },
+  { id: 5, name: "Morgan", shape: "panda", color: "orange", mood: "happy", status: "idle", streak: 15, level: 30, studyHours: 210, cosmetics: { aura: "Gold Streak", frame: "Phoenix Frame", accessory: "Top Hat" }, bio: "Top of the leaderboard" },
 ];
 
 const studyGroups: StudyGroup[] = [
   {
     id: 1, name: "Math Squad", active: true, multiplier: 2.5, subject: "Calculus II",
     members: [
-      { name: "Alex", shape: "star", color: "pink" },
-      { name: "Sam", shape: "triangle", color: "mint" },
-      { name: "Morgan", shape: "pentagon", color: "orange" },
-      { name: "You", shape: "round", color: "blue" },
+      { name: "Alex", shape: "fox", color: "pink" },
+      { name: "Sam", shape: "frog", color: "mint" },
+      { name: "Morgan", shape: "panda", color: "orange" },
+      { name: "You", shape: "capybara", color: "blue" },
     ],
   },
   {
     id: 2, name: "Essay Club", active: false, multiplier: 1.0, subject: "English 201",
     members: [
-      { name: "Jordan", shape: "round", color: "lavender" },
-      { name: "Taylor", shape: "cloud", color: "yellow" },
-      { name: "You", shape: "round", color: "blue" },
+      { name: "Jordan", shape: "bunny", color: "lavender" },
+      { name: "Taylor", shape: "chick", color: "yellow" },
+      { name: "You", shape: "capybara", color: "blue" },
     ],
   },
 ];
