@@ -1,22 +1,30 @@
 import { motion } from "framer-motion";
-import synMascot from "@/assets/syn-mascot.png";
+import BlobChar, { Mood } from "@/components/BlobChar";
 
 interface MascotBubbleProps {
   message: string;
   direction?: "left" | "right";
+  mood?: Mood;
 }
 
-const MascotBubble = ({ message, direction = "left" }: MascotBubbleProps) => (
+const MascotBubble = ({ message, direction = "left", mood = "happy" }: MascotBubbleProps) => (
   <motion.div
-    initial={{ y: 20, opacity: 0 }}
+    initial={{ y: 16, opacity: 0 }}
     whileInView={{ y: 0, opacity: 1 }}
     viewport={{ once: true, margin: "-40px" }}
     transition={{ duration: 0.5 }}
-    className={`flex items-end gap-3 ${direction === "right" ? "flex-row-reverse" : ""}`}
+    className={`flex items-end gap-2 ${direction === "right" ? "flex-row-reverse" : ""}`}
   >
-    <img src={synMascot} alt="Syn the capybara" width={56} height={56} className="w-14 h-14 flex-shrink-0" />
-    <div className="bg-card rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-border max-w-[75%]">
-      <p className="text-sm text-foreground leading-relaxed">{message}</p>
+    <div className="relative flex-shrink-0">
+      <div className="absolute inset-0 bg-blob-pink/50 blob-shape -z-10 scale-110" aria-hidden />
+      <BlobChar shape="round" color="blue" mood={mood} size={56} />
+    </div>
+    <div
+      className={`bg-card rounded-3xl px-4 py-3 shadow-soft border border-border max-w-[78%] ${
+        direction === "right" ? "rounded-br-md" : "rounded-bl-md"
+      }`}
+    >
+      <p className="text-sm text-foreground leading-relaxed font-medium">{message}</p>
     </div>
   </motion.div>
 );
