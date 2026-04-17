@@ -87,9 +87,9 @@ const banners: Banner[] = [
 ];
 
 const rarityColors: Record<string, string> = {
-  Legendary: "from-warm-gold/40 to-coral/30",
-  Rare: "from-secondary/30 to-accent/20",
-  Common: "from-muted to-muted",
+  Legendary: "from-blob-yellow/50 to-blob-coral/40",
+  Rare: "from-blob-lavender/50 to-blob-blue/40",
+  Common: "from-muted to-muted/60",
 };
 
 const rarityTextColor: Record<string, string> = {
@@ -147,10 +147,10 @@ const StationPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
-        <h1 className="text-2xl font-bold text-foreground">The Station</h1>
-        <div className="flex items-center gap-1.5 bg-card/80 backdrop-blur rounded-full px-3 py-1.5 shadow-sm border border-border">
+        <h1 className="text-2xl font-bold text-foreground">Station</h1>
+        <div className="flex items-center gap-1.5 bg-card rounded-full px-3 py-1.5 shadow-soft border border-border">
           <Coins className="w-4 h-4 text-warm-gold" />
-          <span className="text-sm font-bold text-foreground">{points.toLocaleString()}</span>
+          <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
         </div>
       </div>
 
@@ -164,8 +164,8 @@ const StationPage = () => {
           <button
             key={b.id}
             onClick={() => setActiveBanner(i)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
-              i === activeBanner ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
+              i === activeBanner ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"
             }`}
           >
             <span className={`text-[10px] px-1.5 py-0.5 rounded ${b.tagColor}`}>{b.tag}</span>
@@ -179,7 +179,7 @@ const StationPage = () => {
         key={banner.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`mx-6 mt-4 bg-gradient-to-br ${banner.bg} rounded-2xl border border-border overflow-hidden`}
+        className={`mx-6 mt-4 bg-gradient-to-br ${banner.bg} rounded-3xl border border-border overflow-hidden shadow-soft`}
       >
         <div className="p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
@@ -202,10 +202,10 @@ const StationPage = () => {
             whileTap={{ scale: 0.92 }}
             onClick={doPull}
             disabled={points < banner.cost || phase !== "idle"}
-            className={`w-full py-4 rounded-2xl text-base font-bold transition-colors relative overflow-hidden ${
+            className={`w-full py-4 rounded-full text-base font-bold transition-colors relative overflow-hidden ${
               points < banner.cost
                 ? "bg-muted text-muted-foreground"
-                : "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                : "bg-primary text-primary-foreground shadow-pop"
             }`}
           >
             <span className="flex items-center justify-center gap-2">
