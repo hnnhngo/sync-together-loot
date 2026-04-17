@@ -3,14 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
+import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
 
-const streakTiers = [
-  { from: "from-blob-blue/30", to: "to-cream", accent: "text-secondary", label: "Just starting", mood: "sleepy" as const },
-  { from: "from-blob-mint/30", to: "to-cream", accent: "text-blob-sage", label: "Warming up", mood: "happy" as const },
-  { from: "from-blob-yellow/40", to: "to-cream", accent: "text-warm-gold", label: "On a roll!", mood: "happy" as const },
-  { from: "from-blob-orange/40", to: "to-cream", accent: "text-coral", label: "Blazing!", mood: "excited" as const },
-  { from: "from-blob-pink/50", to: "to-blob-lavender/30", accent: "text-primary", label: "Unstoppable!", mood: "excited" as const },
-];
+const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
+const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
 
 const dailyRewards = [
   { day: 1, coins: 10, claimed: true },
