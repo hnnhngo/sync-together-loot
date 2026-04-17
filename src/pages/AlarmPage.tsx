@@ -264,7 +264,7 @@ const AlarmPage = () => {
   const updateBuffer = (id: number, v: number) =>
     setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, buffer: v } : a)));
 
-  const toggleDay = (id: number, day: string) =>
+  const toggleDay = (id: number, day: DayId) =>
     setAlarms((prev) =>
       prev.map((a) =>
         a.id === id
