@@ -1,8 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
+import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import MascotBubble from "@/components/MascotBubble";
+
+type DayId = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 interface Alarm {
   id: number;
@@ -12,15 +15,23 @@ interface Alarm {
   buffer: number;
   syncWith: string | null;
   enabled: boolean;
-  days: string[];
+  days: DayId[];
 }
 
-const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+const dayList: { id: DayId; label: string }[] = [
+  { id: "mon", label: "M" },
+  { id: "tue", label: "T" },
+  { id: "wed", label: "W" },
+  { id: "thu", label: "T" },
+  { id: "fri", label: "F" },
+  { id: "sat", label: "S" },
+  { id: "sun", label: "S" },
+];
 
 const initialAlarms: Alarm[] = [
-  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["M", "W", "F"] },
-  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["T"] },
-  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["M", "T", "W", "T", "F"] },
+  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["mon", "wed", "fri"] },
+  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["tue"] },
+  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["mon", "tue", "wed", "thu", "fri"] },
 ];
 
 const formatTime = (h: number, m: number) =>
