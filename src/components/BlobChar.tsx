@@ -27,6 +27,10 @@ interface BlobCharProps {
   hat?: HatKey;
   outfit?: OutfitKey;
   glasses?: GlassesKey;
+  /** Optional color overrides for accessories (HSL strings). */
+  hatTint?: string;
+  outfitTint?: string;
+  glassesTint?: string;
 }
 
 type HatKey =
