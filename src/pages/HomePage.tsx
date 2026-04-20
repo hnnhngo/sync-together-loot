@@ -257,7 +257,11 @@ const HomePage = () => {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            className="mx-6 mt-6 bg-card rounded-3xl p-5 shadow-soft border border-border"
+            className="mx-6 mt-6 rounded-3xl p-5 shadow-soft border-2"
+            style={{
+              borderColor: `${streakColor.from}55`,
+              background: `linear-gradient(135deg, hsl(var(--card)), ${streakColor.from}18)`,
+            }}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -309,10 +313,13 @@ const HomePage = () => {
               onClick={handleClaim}
               disabled={claimedToday}
               className={`w-full py-3 rounded-2xl text-sm font-bold transition-colors ${
-                claimedToday
-                  ? "bg-muted text-muted-foreground"
-                  : "bg-primary text-primary-foreground shadow-pop"
+                claimedToday ? "bg-muted text-muted-foreground" : "text-white shadow-pop"
               }`}
+              style={
+                claimedToday
+                  ? undefined
+                  : { background: `linear-gradient(135deg, ${streakColor.from}, ${streakColor.to})` }
+              }
             >
               {claimedToday ? "Claimed today ✓" : "Claim 20 coins"}
             </motion.button>
