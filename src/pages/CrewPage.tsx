@@ -272,7 +272,7 @@ const CrewPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="flex flex-col gap-3"
             >
-              {studyGroups.map((group) => (
+              {groups.map((group) => (
                 <div
                   key={group.id}
                   className={`bg-card rounded-3xl border border-border p-5 shadow-soft ${
@@ -281,22 +281,25 @@ const CrewPage = () => {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="text-base font-bold text-foreground">{group.name}</h3>
-                    {group.active && (
-                      <span className="flex items-center gap-1 bg-primary/15 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold">
-                        <Zap className="w-3 h-3" /> x{group.multiplier}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {group.invited && !group.joined && (
+                        <span className="text-[10px] font-bold bg-warm-gold/20 text-warm-gold px-2 py-0.5 rounded-full">Invited</span>
+                      )}
+                      {group.requested && (
+                        <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Requested</span>
+                      )}
+                      {group.active && (
+                        <span className="flex items-center gap-1 bg-primary/15 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold">
+                          <Zap className="w-3 h-3" /> x{group.multiplier}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">{group.subject}</p>
 
-                  {/* Member characters */}
                   <div className="flex items-center gap-1 mb-3">
                     {group.members.map((m, i) => (
-                      <div
-                        key={m.name}
-                        className="-ml-2 first:ml-0"
-                        style={{ zIndex: group.members.length - i }}
-                      >
+                      <div key={m.name} className="-ml-2 first:ml-0" style={{ zIndex: group.members.length - i }}>
                         <div className="rounded-full border-2 border-card bg-cream">
                           <BlobChar shape={m.shape} color={m.color} mood="happy" size={36} bounce={false} />
                         </div>
@@ -305,20 +308,44 @@ const CrewPage = () => {
                     <span className="text-[10px] text-muted-foreground font-semibold ml-2">{group.members.length} members</span>
                   </div>
 
-                  <div className="flex gap-2">
+                  {group.joined ? (
+                    <div className="flex gap-2">
+                      <button
+                        className={`flex-1 py-2.5 rounded-full text-xs font-bold ${
+                          group.active ? "bg-primary text-primary-foreground shadow-soft" : "bg-muted text-foreground"
+                        }`}
+                      >
+                        {group.active ? "Join Session" : "Start Session"}
+                      </button>
+                      <button
+                        onClick={() => setSuggestForGroup(group)}
+                        className="flex items-center gap-1 px-3 py-2 rounded-full bg-blob-yellow/40 text-foreground text-xs font-bold"
+                        aria-label="Suggest alarm"
+                      >
+                        <AlarmClock className="w-4 h-4" /> Suggest
+                      </button>
+                      <button className="px-3 py-2 rounded-full bg-muted text-muted-foreground" aria-label="Chat">
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : group.invited ? (
                     <button
-                      className={`flex-1 py-2.5 rounded-full text-xs font-bold ${
-                        group.active
-                          ? "bg-primary text-primary-foreground shadow-soft"
-                          : "bg-muted text-muted-foreground"
+                      onClick={() => acceptInvite(group.id)}
+                      className="w-full py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-pop flex items-center justify-center gap-1"
+                    >
+                      <LogIn className="w-4 h-4" /> Accept invite
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => requestJoin(group.id)}
+                      disabled={group.requested}
+                      className={`w-full py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1 ${
+                        group.requested ? "bg-muted text-muted-foreground" : "bg-secondary text-secondary-foreground shadow-pop"
                       }`}
                     >
-                      {group.active ? "Join Session" : "Start Session"}
+                      <Send className="w-4 h-4" /> {group.requested ? "Request pending" : "Request to join"}
                     </button>
-                    <button className="px-3 py-2 rounded-full bg-muted text-muted-foreground">
-                      <MessageCircle className="w-4 h-4" />
-                    </button>
-                  </div>
+                  )}
                 </div>
               ))}
 
