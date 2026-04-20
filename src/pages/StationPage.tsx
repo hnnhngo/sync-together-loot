@@ -1,12 +1,23 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, Timer, Sparkles, Star, Crown, Gift, RotateCcw } from "lucide-react";
+import { Coins, Timer, Gift } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
+import BlobChar, { HatKey, OutfitKey, GlassesKey, BlobShape, BlobColor } from "@/components/BlobChar";
+import { cosmeticsStore, STREAK_COLORS, StreakColorKey } from "@/lib/cosmetics-store";
+
+type Rarity = "Legendary" | "Rare" | "Common";
 
 interface GachaItem {
   name: string;
-  rarity: "Legendary" | "Rare" | "Common";
-  visual: string; // emoji/gradient representation
+  rarity: Rarity;
+  /** Which slot the cosmetic equips into. */
+  slot: "hat" | "outfit" | "glasses" | "streakColor" | "shape" | "color";
+  hat?: HatKey;
+  outfit?: OutfitKey;
+  glasses?: GlassesKey;
+  streakColor?: StreakColorKey;
+  shape?: BlobShape;
+  color?: BlobColor;
 }
 
 interface Banner {
@@ -17,9 +28,14 @@ interface Banner {
   bg: string;
   endsIn: string;
   cost: number;
+  /** Preview character for the banner art. */
+  previewShape: BlobShape;
+  previewColor: BlobColor;
+  previewHat?: HatKey;
+  previewOutfit?: OutfitKey;
+  previewGlasses?: GlassesKey;
   pool: GachaItem[];
   rates: { Legendary: number; Rare: number; Common: number };
-  pity: number;
 }
 
 const banners: Banner[] = [
@@ -31,17 +47,20 @@ const banners: Banner[] = [
     bg: "from-coral/20 to-warm-gold/10",
     endsIn: "3d 14h",
     cost: 150,
-    pity: 0,
+    previewShape: "fox",
+    previewColor: "orange",
+    previewHat: "graduationCap",
+    previewOutfit: "cape",
     rates: { Legendary: 5, Rare: 25, Common: 70 },
     pool: [
-      { name: "Ember Aura", rarity: "Legendary", visual: "🔥" },
-      { name: "Phoenix Frame", rarity: "Legendary", visual: "🦅" },
-      { name: "Inferno Crown", rarity: "Rare", visual: "👑" },
-      { name: "Flame Badge", rarity: "Rare", visual: "🏅" },
-      { name: "Spark Trail", rarity: "Rare", visual: "✨" },
-      { name: "Flame Trail", rarity: "Common", visual: "💨" },
-      { name: "Ember Sticker", rarity: "Common", visual: "🔖" },
-      { name: "Fire Ring", rarity: "Common", visual: "⭕" },
+      { name: "Ember Streak",  rarity: "Legendary", slot: "streakColor", streakColor: "ember" },
+      { name: "Hero Cape",     rarity: "Legendary", slot: "outfit", outfit: "cape" },
+      { name: "Royal Crown",   rarity: "Rare",      slot: "hat", hat: "crown" },
+      { name: "Grad Cap",      rarity: "Rare",      slot: "hat", hat: "graduationCap" },
+      { name: "Cool Shades",   rarity: "Rare",      slot: "glasses", glasses: "shades" },
+      { name: "Cozy Beanie",   rarity: "Common",    slot: "hat", hat: "beanie" },
+      { name: "Cozy Scarf",    rarity: "Common",    slot: "outfit", outfit: "scarf" },
+      { name: "Round Glasses", rarity: "Common",    slot: "glasses", glasses: "round" },
     ],
   },
   {
@@ -52,16 +71,20 @@ const banners: Banner[] = [
     bg: "from-sage/20 to-secondary/10",
     endsIn: "12d 8h",
     cost: 120,
-    pity: 0,
+    previewShape: "bunny",
+    previewColor: "mint",
+    previewHat: "flowerCrown",
+    previewOutfit: "kawaiiApron",
     rates: { Legendary: 5, Rare: 30, Common: 65 },
     pool: [
-      { name: "Blossom Aura", rarity: "Legendary", visual: "🌸" },
-      { name: "Petal Crown", rarity: "Rare", visual: "🌺" },
-      { name: "Vine Frame", rarity: "Rare", visual: "🌿" },
-      { name: "Dewdrop Badge", rarity: "Rare", visual: "💧" },
-      { name: "Garden Badge", rarity: "Common", visual: "🌱" },
-      { name: "Leaf Sticker", rarity: "Common", visual: "🍃" },
-      { name: "Daisy Ring", rarity: "Common", visual: "🌼" },
+      { name: "Emerald Streak",  rarity: "Legendary", slot: "streakColor", streakColor: "emerald" },
+      { name: "Kawaii Apron",    rarity: "Legendary", slot: "outfit", outfit: "kawaiiApron" },
+      { name: "Flower Crown",    rarity: "Rare",      slot: "hat", hat: "flowerCrown" },
+      { name: "Halo",            rarity: "Rare",      slot: "hat", hat: "halo" },
+      { name: "Heart Eyes",      rarity: "Rare",      slot: "glasses", glasses: "heart" },
+      { name: "Bowtie",          rarity: "Common",    slot: "outfit", outfit: "bowtie" },
+      { name: "Rose Streak",     rarity: "Common",    slot: "streakColor", streakColor: "rose" },
+      { name: "Round Glasses",   rarity: "Common",    slot: "glasses", glasses: "round" },
     ],
   },
   {
@@ -72,36 +95,76 @@ const banners: Banner[] = [
     bg: "from-accent/15 to-primary/10",
     endsIn: "20d 2h",
     cost: 180,
-    pity: 0,
+    previewShape: "cat",
+    previewColor: "lavender",
+    previewHat: "neonVisor",
+    previewGlasses: "shades",
     rates: { Legendary: 3, Rare: 22, Common: 75 },
     pool: [
-      { name: "Neon Halo", rarity: "Legendary", visual: "💜" },
-      { name: "Cyber Visor", rarity: "Legendary", visual: "🕶️" },
-      { name: "Glow Skin", rarity: "Rare", visual: "✨" },
-      { name: "Pulse Frame", rarity: "Rare", visual: "💠" },
-      { name: "Pixel Shades", rarity: "Common", visual: "🟪" },
-      { name: "Circuit Badge", rarity: "Common", visual: "⚡" },
-      { name: "Byte Ring", rarity: "Common", visual: "💿" },
+      { name: "Neon Visor",     rarity: "Legendary", slot: "hat", hat: "neonVisor" },
+      { name: "Violet Streak",  rarity: "Legendary", slot: "streakColor", streakColor: "violet" },
+      { name: "Top Hat",        rarity: "Rare",      slot: "hat", hat: "topHat" },
+      { name: "Cool Shades",    rarity: "Rare",      slot: "glasses", glasses: "shades" },
+      { name: "Sky Streak",     rarity: "Rare",      slot: "streakColor", streakColor: "sky" },
+      { name: "Cozy Beanie",    rarity: "Common",    slot: "hat", hat: "beanie" },
+      { name: "Round Glasses",  rarity: "Common",    slot: "glasses", glasses: "round" },
     ],
   },
 ];
 
-const rarityColors: Record<string, string> = {
-  Legendary: "from-blob-yellow/50 to-blob-coral/40",
-  Rare: "from-blob-lavender/50 to-blob-blue/40",
-  Common: "from-muted to-muted/60",
-};
-
-const rarityTextColor: Record<string, string> = {
+const rarityTextColor: Record<Rarity, string> = {
   Legendary: "text-warm-gold",
   Rare: "text-secondary",
   Common: "text-muted-foreground",
 };
 
-const rarityGlow: Record<string, string> = {
+const rarityGlow: Record<Rarity, string> = {
   Legendary: "shadow-[0_0_40px_hsl(var(--warm-gold)/0.5)]",
   Rare: "shadow-[0_0_30px_hsl(var(--secondary)/0.4)]",
   Common: "",
+};
+
+const rarityRing: Record<Rarity, string> = {
+  Legendary: "ring-2 ring-warm-gold/60",
+  Rare: "ring-2 ring-secondary/50",
+  Common: "ring-1 ring-border",
+};
+
+/** Render a tiny BlobChar preview tinted to show only the cosmetic accessory. */
+const ItemPreview = ({ item, size = 56 }: { item: GachaItem; size?: number }) => {
+  // Use a neutral cream blob to highlight the accessory.
+  const baseProps = {
+    shape: "bunny" as BlobShape,
+    color: "yellow" as BlobColor,
+    mood: "happy" as const,
+    size,
+    bounce: false,
+  };
+
+  if (item.slot === "hat")     return <BlobChar {...baseProps} hat={item.hat} />;
+  if (item.slot === "outfit")  return <BlobChar {...baseProps} outfit={item.outfit} />;
+  if (item.slot === "glasses") return <BlobChar {...baseProps} glasses={item.glasses} />;
+  if (item.slot === "shape")   return <BlobChar {...baseProps} shape={item.shape!} />;
+  if (item.slot === "color")   return <BlobChar {...baseProps} color={item.color!} />;
+  if (item.slot === "streakColor" && item.streakColor) {
+    const sc = STREAK_COLORS[item.streakColor];
+    return (
+      <div
+        className="rounded-full flex items-center justify-center"
+        style={{
+          width: size,
+          height: size,
+          background: `radial-gradient(circle at 35% 30%, ${sc.from}, ${sc.to})`,
+          boxShadow: `0 0 12px ${sc.from}88`,
+        }}
+      >
+        <svg viewBox="0 0 24 24" width={size * 0.5} height={size * 0.5} fill="white" aria-hidden>
+          <path d="M12 2c1 4 5 5 5 10a5 5 0 1 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z" />
+        </svg>
+      </div>
+    );
+  }
+  return <BlobChar {...baseProps} />;
 };
 
 type PullPhase = "idle" | "spinning" | "reveal";
@@ -120,9 +183,8 @@ const StationPage = () => {
     setPoints((p) => p - banner.cost);
     setPhase("spinning");
 
-    // Determine rarity via weighted random
     const roll = Math.random() * 100;
-    let rarity: "Legendary" | "Rare" | "Common";
+    let rarity: Rarity;
     if (roll < banner.rates.Legendary) rarity = "Legendary";
     else if (roll < banner.rates.Legendary + banner.rates.Rare) rarity = "Rare";
     else rarity = "Common";
@@ -136,6 +198,17 @@ const StationPage = () => {
       setHistory((prev) => [item, ...prev.slice(0, 9)]);
     }, 1800);
   }, [activeBanner, points, phase]);
+
+  const equipPulled = () => {
+    if (!pulledItem) return;
+    if (pulledItem.slot === "hat" && pulledItem.hat)               cosmeticsStore.set({ hat: pulledItem.hat });
+    else if (pulledItem.slot === "outfit" && pulledItem.outfit)    cosmeticsStore.set({ outfit: pulledItem.outfit });
+    else if (pulledItem.slot === "glasses" && pulledItem.glasses)  cosmeticsStore.set({ glasses: pulledItem.glasses });
+    else if (pulledItem.slot === "streakColor" && pulledItem.streakColor) cosmeticsStore.set({ streakColor: pulledItem.streakColor });
+    else if (pulledItem.slot === "shape" && pulledItem.shape)      cosmeticsStore.set({ shape: pulledItem.shape });
+    else if (pulledItem.slot === "color" && pulledItem.color)      cosmeticsStore.set({ color: pulledItem.color });
+    closePull();
+  };
 
   const closePull = () => {
     setPhase("idle");
@@ -155,7 +228,7 @@ const StationPage = () => {
       </div>
 
       <div className="px-6 mt-2">
-        <MascotBubble message="Pull from banners to win cosmetics! Legendary drops are rare — good luck! 🍀" />
+        <MascotBubble message="Pull from banners to win real accessories — hats, outfits, streak auras and more! 🍀" />
       </div>
 
       {/* Banner selector tabs */}
@@ -181,14 +254,26 @@ const StationPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className={`mx-6 mt-4 bg-gradient-to-br ${banner.bg} rounded-3xl border border-border overflow-hidden shadow-soft`}
       >
-        <div className="p-5 text-center">
+        {/* Banner hero with character preview wearing the banner's signature look */}
+        <div className="relative px-5 pt-5 pb-2 flex items-center justify-center">
+          <BlobChar
+            shape={banner.previewShape}
+            color={banner.previewColor}
+            hat={banner.previewHat}
+            outfit={banner.previewOutfit}
+            glasses={banner.previewGlasses}
+            mood="excited"
+            size={120}
+          />
+        </div>
+
+        <div className="px-5 pb-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
             <Timer className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs font-semibold text-muted-foreground">Ends in {banner.endsIn}</span>
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-2">{banner.name}</h2>
 
-          {/* Rate display */}
           <div className="flex justify-center gap-3 mb-4">
             {(["Legendary", "Rare", "Common"] as const).map((r) => (
               <span key={r} className={`text-[10px] font-bold ${rarityTextColor[r]}`}>
@@ -197,7 +282,6 @@ const StationPage = () => {
             ))}
           </div>
 
-          {/* Pull button */}
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={doPull}
@@ -218,17 +302,20 @@ const StationPage = () => {
           </motion.button>
         </div>
 
-        {/* Item pool preview */}
+        {/* Item pool preview — visual accessory previews instead of emoji */}
         <div className="px-4 pb-4">
-          <p className="text-[10px] font-semibold text-muted-foreground mb-2">Available in this banner:</p>
-          <div className="flex flex-wrap gap-1.5">
+          <p className="text-[10px] font-semibold text-muted-foreground mb-2 px-1">Available accessories:</p>
+          <div className="grid grid-cols-4 gap-2">
             {banner.pool.map((item) => (
-              <span
+              <div
                 key={item.name}
-                className={`inline-flex items-center gap-1 bg-card/70 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-semibold ${rarityTextColor[item.rarity]}`}
+                className={`bg-card/80 backdrop-blur rounded-2xl p-2 flex flex-col items-center gap-1 ${rarityRing[item.rarity]}`}
               >
-                {item.visual} {item.name}
-              </span>
+                <ItemPreview item={item} size={48} />
+                <span className={`text-[9px] font-bold text-center leading-tight ${rarityTextColor[item.rarity]}`}>
+                  {item.name}
+                </span>
+              </div>
             ))}
           </div>
         </div>
@@ -245,9 +332,9 @@ const StationPage = () => {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: i * 0.05 }}
-                className={`flex-shrink-0 w-16 h-20 rounded-xl bg-gradient-to-br ${rarityColors[item.rarity]} flex flex-col items-center justify-center gap-1 border border-border`}
+                className={`flex-shrink-0 w-20 h-24 rounded-xl bg-card flex flex-col items-center justify-center gap-1 ${rarityRing[item.rarity]}`}
               >
-                <span className="text-xl">{item.visual}</span>
+                <ItemPreview item={item} size={40} />
                 <span className={`text-[8px] font-bold ${rarityTextColor[item.rarity]}`}>{item.rarity}</span>
               </motion.div>
             ))}
@@ -290,16 +377,16 @@ const StationPage = () => {
                 initial={{ scale: 0, rotate: -30 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 180, damping: 12 }}
-                className={`bg-card rounded-3xl p-8 text-center mx-8 ${rarityGlow[pulledItem.rarity]}`}
+                onClick={(e) => e.stopPropagation()}
+                className={`bg-card rounded-3xl p-6 text-center mx-8 ${rarityGlow[pulledItem.rarity]}`}
               >
-                {/* Rarity burst */}
                 <motion.div
                   initial={{ scale: 0 }}
-                  animate={{ scale: [0, 1.5, 1] }}
+                  animate={{ scale: [0, 1.2, 1] }}
                   transition={{ duration: 0.5 }}
-                  className="text-6xl mb-3"
+                  className="mb-2 flex justify-center"
                 >
-                  {pulledItem.visual}
+                  <ItemPreview item={pulledItem} size={120} />
                 </motion.div>
 
                 <motion.div
@@ -311,7 +398,21 @@ const StationPage = () => {
                     {pulledItem.rarity === "Legendary" ? "★ LEGENDARY ★" : pulledItem.rarity === "Rare" ? "◆ RARE ◆" : "● COMMON ●"}
                   </p>
                   <h3 className="text-xl font-bold text-foreground">{pulledItem.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-2">Tap anywhere to close</p>
+
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={equipPulled}
+                      className="flex-1 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-pop"
+                    >
+                      Equip now
+                    </button>
+                    <button
+                      onClick={closePull}
+                      className="flex-1 py-2.5 rounded-full bg-muted text-foreground text-sm font-bold"
+                    >
+                      Keep in locker
+                    </button>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
