@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Crown, Star, Sparkles, Palette, Check, Flame } from "lucide-react";
+import { Crown, Star, Sparkles, Palette, Check, Flame, RotateCcw, Lock, Info } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { BlobShape, BlobColor, Mood, HatKey, OutfitKey, GlassesKey } from "@/components/BlobChar";
-import { cosmeticsStore, useCosmetics, STREAK_COLORS, StreakColorKey } from "@/lib/cosmetics-store";
+import {
+  cosmeticsStore, useCosmetics, STREAK_COLORS, StreakColorKey, shapeHasColorVariants,
+} from "@/lib/cosmetics-store";
+import { ACCESSORY_VARIANTS, AccessoryVariant, findVariant } from "@/lib/accessory-variants";
 
-type CosmeticType = "shape" | "color" | "hat" | "outfit" | "glasses" | "streakColor" | "frame" | "aura";
+type CosmeticType = "shape" | "color" | "hat" | "outfit" | "glasses" | "streakColor";
 
 interface CosmeticItem {
   id: number;
@@ -18,68 +21,66 @@ interface CosmeticItem {
   outfit?: OutfitKey;
   glasses?: GlassesKey;
   streakColor?: StreakColorKey;
-  frameClass?: string;
-  auraClass?: string;
 }
 
 const inventory: CosmeticItem[] = [
-  // Animals (shape)
+  // Animals
   { id: 10, name: "Capybara (Syn)", type: "shape", rarity: "Legendary", shape: "capybara" },
-  { id: 11, name: "Bunny", type: "shape", rarity: "Common", shape: "bunny" },
-  { id: 12, name: "Bear", type: "shape", rarity: "Common", shape: "bear" },
-  { id: 13, name: "Cat", type: "shape", rarity: "Common", shape: "cat" },
-  { id: 14, name: "Frog", type: "shape", rarity: "Rare", shape: "frog" },
-  { id: 15, name: "Fox", type: "shape", rarity: "Rare", shape: "fox" },
-  { id: 16, name: "Chick", type: "shape", rarity: "Rare", shape: "chick" },
-  { id: 17, name: "Panda", type: "shape", rarity: "Legendary", shape: "panda" },
+  { id: 11, name: "Bunny",          type: "shape", rarity: "Common",    shape: "bunny" },
+  { id: 12, name: "Bear",           type: "shape", rarity: "Common",    shape: "bear" },
+  { id: 13, name: "Cat",            type: "shape", rarity: "Common",    shape: "cat" },
+  { id: 14, name: "Frog",           type: "shape", rarity: "Rare",     shape: "frog" },
+  { id: 15, name: "Fox",            type: "shape", rarity: "Rare",     shape: "fox" },
+  { id: 16, name: "Chick",          type: "shape", rarity: "Rare",     shape: "chick" },
+  { id: 17, name: "Panda",          type: "shape", rarity: "Legendary", shape: "panda" },
 
   // Colors
-  { id: 20, name: "Sky Blue", type: "color", rarity: "Common", color: "blue" },
-  { id: 21, name: "Cherry Pink", type: "color", rarity: "Common", color: "pink" },
-  { id: 22, name: "Mint Green", type: "color", rarity: "Rare", color: "mint" },
-  { id: 23, name: "Lavender", type: "color", rarity: "Rare", color: "lavender" },
-  { id: 24, name: "Sunset", type: "color", rarity: "Legendary", color: "orange" },
-  { id: 25, name: "Sage", type: "color", rarity: "Rare", color: "sage" },
-  { id: 26, name: "Coral", type: "color", rarity: "Rare", color: "coral" },
-  { id: 27, name: "Buttercup", type: "color", rarity: "Common", color: "yellow" },
+  { id: 20, name: "Sky Blue",   type: "color", rarity: "Common",    color: "blue" },
+  { id: 21, name: "Cherry Pink",type: "color", rarity: "Common",    color: "pink" },
+  { id: 22, name: "Mint Green", type: "color", rarity: "Rare",      color: "mint" },
+  { id: 23, name: "Lavender",   type: "color", rarity: "Rare",      color: "lavender" },
+  { id: 24, name: "Sunset",     type: "color", rarity: "Legendary", color: "orange" },
+  { id: 25, name: "Sage",       type: "color", rarity: "Rare",      color: "sage" },
+  { id: 26, name: "Coral",      type: "color", rarity: "Rare",      color: "coral" },
+  { id: 27, name: "Buttercup",  type: "color", rarity: "Common",    color: "yellow" },
 
   // Hats
   { id: 30, name: "Royal Crown", type: "hat", rarity: "Legendary", hat: "crown" },
-  { id: 31, name: "Cozy Beanie", type: "hat", rarity: "Common", hat: "beanie" },
-  { id: 32, name: "Top Hat", type: "hat", rarity: "Rare", hat: "topHat" },
-  { id: 33, name: "Flower Crown", type: "hat", rarity: "Rare", hat: "flowerCrown" },
-  { id: 34, name: "Halo", type: "hat", rarity: "Legendary", hat: "halo" },
-  { id: 35, name: "Grad Cap", type: "hat", rarity: "Rare", hat: "graduationCap" },
-  { id: 36, name: "Neon Visor (Cyber Collab)", type: "hat", rarity: "Legendary", hat: "neonVisor" },
+  { id: 31, name: "Cozy Beanie", type: "hat", rarity: "Common",    hat: "beanie" },
+  { id: 32, name: "Top Hat",     type: "hat", rarity: "Rare",      hat: "topHat" },
+  { id: 33, name: "Flower Crown",type: "hat", rarity: "Rare",      hat: "flowerCrown" },
+  { id: 34, name: "Halo",        type: "hat", rarity: "Legendary", hat: "halo" },
+  { id: 35, name: "Grad Cap",    type: "hat", rarity: "Rare",      hat: "graduationCap" },
+  { id: 36, name: "Neon Visor",  type: "hat", rarity: "Legendary", hat: "neonVisor" },
 
-  // Outfits / Collabs
-  { id: 40, name: "Cozy Scarf", type: "outfit", rarity: "Common", outfit: "scarf" },
-  { id: 41, name: "Hero Cape", type: "outfit", rarity: "Legendary", outfit: "cape" },
-  { id: 42, name: "Bowtie", type: "outfit", rarity: "Common", outfit: "bowtie" },
-  { id: 43, name: "Astronaut (Space Collab)", type: "outfit", rarity: "Legendary", outfit: "spaceCollab" },
-  { id: 44, name: "Kawaii Apron (Cafe Collab)", type: "outfit", rarity: "Rare", outfit: "kawaiiApron" },
+  // Outfits
+  { id: 40, name: "Cozy Scarf",   type: "outfit", rarity: "Common",    outfit: "scarf" },
+  { id: 41, name: "Hero Cape",    type: "outfit", rarity: "Legendary", outfit: "cape" },
+  { id: 42, name: "Bowtie",       type: "outfit", rarity: "Common",    outfit: "bowtie" },
+  { id: 43, name: "Astronaut",    type: "outfit", rarity: "Legendary", outfit: "spaceCollab" },
+  { id: 44, name: "Kawaii Apron", type: "outfit", rarity: "Rare",      outfit: "kawaiiApron" },
 
   // Glasses
-  { id: 50, name: "Round Glasses", type: "glasses", rarity: "Common", glasses: "round" },
-  { id: 51, name: "Cool Shades", type: "glasses", rarity: "Rare", glasses: "shades" },
-  { id: 52, name: "Heart Eyes", type: "glasses", rarity: "Legendary", glasses: "heart" },
+  { id: 50, name: "Round Glasses",type: "glasses", rarity: "Common",   glasses: "round" },
+  { id: 51, name: "Cool Shades",  type: "glasses", rarity: "Rare",     glasses: "shades" },
+  { id: 52, name: "Heart Eyes",   type: "glasses", rarity: "Legendary",glasses: "heart" },
 
   // Streak Colors
-  { id: 60, name: "Ember Streak", type: "streakColor", rarity: "Common", streakColor: "ember" },
-  { id: 61, name: "Rose Streak", type: "streakColor", rarity: "Common", streakColor: "rose" },
-  { id: 62, name: "Violet Streak", type: "streakColor", rarity: "Rare", streakColor: "violet" },
-  { id: 63, name: "Sky Streak", type: "streakColor", rarity: "Rare", streakColor: "sky" },
-  { id: 64, name: "Emerald Streak", type: "streakColor", rarity: "Legendary", streakColor: "emerald" },
-  { id: 65, name: "Gold Streak", type: "streakColor", rarity: "Legendary", streakColor: "gold" },
+  { id: 60, name: "Ember Streak",  type: "streakColor", rarity: "Common",    streakColor: "ember" },
+  { id: 61, name: "Rose Streak",   type: "streakColor", rarity: "Common",    streakColor: "rose" },
+  { id: 62, name: "Violet Streak", type: "streakColor", rarity: "Rare",      streakColor: "violet" },
+  { id: 63, name: "Sky Streak",    type: "streakColor", rarity: "Rare",      streakColor: "sky" },
+  { id: 64, name: "Emerald Streak",type: "streakColor", rarity: "Legendary", streakColor: "emerald" },
+  { id: 65, name: "Gold Streak",   type: "streakColor", rarity: "Legendary", streakColor: "gold" },
 ];
 
 const typeFilters: { key: "all" | CosmeticType; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "shape", label: "Animal" },
-  { key: "color", label: "Color" },
-  { key: "hat", label: "Hat" },
-  { key: "outfit", label: "Outfit" },
-  { key: "glasses", label: "Glasses" },
+  { key: "all",         label: "All" },
+  { key: "shape",       label: "Animal" },
+  { key: "color",       label: "Color" },
+  { key: "hat",         label: "Hat" },
+  { key: "outfit",      label: "Outfit" },
+  { key: "glasses",     label: "Glasses" },
   { key: "streakColor", label: "Streak" },
 ];
 
@@ -98,18 +99,33 @@ const LockerPage = () => {
   const [filter, setFilter] = useState<"all" | CosmeticType>("all");
   const [previewMood, setPreviewMood] = useState<Mood>("happy");
 
-  // Determine if an item is currently equipped based on the global cosmetics state
+  const colorEnabled = shapeHasColorVariants(cosmetics.shape);
+
+  // Currently equipped variant tints (HSL strings)
+  const hatVariant = findVariant(cosmetics.equippedHatVariant);
+  const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
+  const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
+
   const isEquipped = (item: CosmeticItem): boolean => {
-    if (item.type === "shape") return cosmetics.shape === item.shape;
-    if (item.type === "color") return cosmetics.color === item.color;
-    if (item.type === "hat") return cosmetics.hat === item.hat;
-    if (item.type === "outfit") return cosmetics.outfit === item.outfit;
-    if (item.type === "glasses") return cosmetics.glasses === item.glasses;
+    if (item.type === "shape")       return cosmetics.shape === item.shape;
+    if (item.type === "color")       return cosmetics.color === item.color;
+    if (item.type === "hat")         return cosmetics.hat === item.hat;
+    if (item.type === "outfit")      return cosmetics.outfit === item.outfit;
+    if (item.type === "glasses")     return cosmetics.glasses === item.glasses;
     if (item.type === "streakColor") return cosmetics.streakColor === item.streakColor;
     return false;
   };
 
+  const isOwned = (item: CosmeticItem): boolean => {
+    if (item.type === "hat")         return (cosmetics.ownedHats[item.hat!] ?? 0) > 0;
+    if (item.type === "outfit")      return (cosmetics.ownedOutfits[item.outfit!] ?? 0) > 0;
+    if (item.type === "glasses")     return (cosmetics.ownedGlasses[item.glasses!] ?? 0) > 0;
+    if (item.type === "streakColor") return (cosmetics.ownedStreaks[item.streakColor!] ?? 0) > 0;
+    return true; // animals + colors are always available in this prototype
+  };
+
   const toggleEquip = (item: CosmeticItem) => {
+    if (!isOwned(item)) return;
     const equipped = isEquipped(item);
     switch (item.type) {
       case "shape":
@@ -119,13 +135,22 @@ const LockerPage = () => {
         if (item.color) cosmeticsStore.set({ color: item.color });
         break;
       case "hat":
-        cosmeticsStore.set({ hat: equipped ? "none" : item.hat! });
+        cosmeticsStore.set({
+          hat: equipped ? "none" : item.hat!,
+          equippedHatVariant: equipped ? undefined : cosmetics.equippedHatVariant,
+        });
         break;
       case "outfit":
-        cosmeticsStore.set({ outfit: equipped ? "none" : item.outfit! });
+        cosmeticsStore.set({
+          outfit: equipped ? "none" : item.outfit!,
+          equippedOutfitVariant: equipped ? undefined : cosmetics.equippedOutfitVariant,
+        });
         break;
       case "glasses":
-        cosmeticsStore.set({ glasses: equipped ? "none" : item.glasses! });
+        cosmeticsStore.set({
+          glasses: equipped ? "none" : item.glasses!,
+          equippedGlassesVariant: equipped ? undefined : cosmetics.equippedGlassesVariant,
+        });
         break;
       case "streakColor":
         if (item.streakColor) cosmeticsStore.set({ streakColor: item.streakColor });
@@ -138,18 +163,48 @@ const LockerPage = () => {
     setPreviewMood(moods[(idx + 1) % moods.length]);
   };
 
-  const filtered = filter === "all" ? inventory : inventory.filter((i) => i.type === filter);
-  const equippedCount = inventory.filter(isEquipped).length;
+  const filtered = useMemo(() => {
+    let list = filter === "all" ? inventory : inventory.filter((i) => i.type === filter);
+    if (filter === "color" && !colorEnabled) {
+      // still show cards but disabled visually below
+    }
+    return list;
+  }, [filter, colorEnabled]);
+
   const equippedStreak = STREAK_COLORS[cosmetics.streakColor];
+
+  // Owned variants for the active hat/outfit/glasses (offered as tint quick-swaps)
+  const ownedVariantsFor = (slot: "hat" | "outfit" | "glasses", baseKey: string | undefined) =>
+    baseKey
+      ? ACCESSORY_VARIANTS.filter(
+          (v) => v.slot === slot && v.baseKey === baseKey && cosmetics.ownedVariants[v.id],
+        )
+      : [];
+
+  const equippedHatVariants = ownedVariantsFor("hat", cosmetics.hat !== "none" ? cosmetics.hat : undefined);
+  const equippedOutfitVariants = ownedVariantsFor("outfit", cosmetics.outfit !== "none" ? cosmetics.outfit : undefined);
+  const equippedGlassesVariants = ownedVariantsFor("glasses", cosmetics.glasses !== "none" ? cosmetics.glasses : undefined);
+
+  const hasAnyAccessoryEquipped =
+    cosmetics.hat !== "none" || cosmetics.outfit !== "none" || cosmetics.glasses !== "none";
 
   return (
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Locker</h1>
-        <div className="flex items-center gap-1.5 bg-card rounded-full px-3 py-1.5 shadow-soft border border-border">
-          <Palette className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold text-foreground">{equippedCount} equipped</span>
-        </div>
+        <button
+          onClick={() => cosmeticsStore.resetEquipped()}
+          disabled={!hasAnyAccessoryEquipped}
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border text-xs font-bold transition-colors ${
+            hasAnyAccessoryEquipped
+              ? "bg-card text-foreground border-border hover:bg-muted"
+              : "bg-muted/50 text-muted-foreground border-transparent"
+          }`}
+          aria-label="Remove all accessories"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          Reset accessories
+        </button>
       </div>
 
       <div className="px-6 mt-2">
@@ -175,6 +230,9 @@ const LockerPage = () => {
               hat={cosmetics.hat}
               outfit={cosmetics.outfit}
               glasses={cosmetics.glasses}
+              hatTint={hatVariant?.primary}
+              outfitTint={outfitVariant?.primary}
+              glassesTint={glassesVariant?.primary}
               mood={previewMood}
               size={140}
               onClick={cycleMood}
@@ -184,6 +242,39 @@ const LockerPage = () => {
 
           <p className="text-base font-bold text-foreground mt-2">Your Syn</p>
           <p className="text-[10px] text-muted-foreground">Tap to change mood</p>
+
+          {/* Equipped variant quick swap */}
+          {(equippedHatVariants.length + equippedOutfitVariants.length + equippedGlassesVariants.length) > 0 && (
+            <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+              {[
+                { slot: "hat" as const, list: equippedHatVariants, current: cosmetics.equippedHatVariant, key: "equippedHatVariant" as const },
+                { slot: "outfit" as const, list: equippedOutfitVariants, current: cosmetics.equippedOutfitVariant, key: "equippedOutfitVariant" as const },
+                { slot: "glasses" as const, list: equippedGlassesVariants, current: cosmetics.equippedGlassesVariant, key: "equippedGlassesVariant" as const },
+              ].flatMap((g) => [
+                g.list.length > 0 && (
+                  <button
+                    key={`${g.slot}-default`}
+                    onClick={() => cosmeticsStore.set({ [g.key]: undefined } as never)}
+                    className={`w-6 h-6 rounded-full border-2 ${
+                      !g.current ? "border-primary" : "border-border"
+                    }`}
+                    style={{ background: "repeating-linear-gradient(45deg, hsl(var(--muted)) 0 3px, hsl(var(--card)) 3px 6px)" }}
+                    aria-label={`Default ${g.slot} color`}
+                  />
+                ),
+                ...g.list.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => cosmeticsStore.set({ [g.key]: v.id } as never)}
+                    className={`w-6 h-6 rounded-full border-2 ${g.current === v.id ? "border-primary" : "border-border"}`}
+                    style={{ background: v.primary }}
+                    aria-label={v.name}
+                    title={v.name}
+                  />
+                )),
+              ])}
+            </div>
+          )}
 
           {/* Streak preview */}
           <div className="inline-flex items-center gap-1.5 bg-card rounded-full px-3 py-1 mt-3 border border-border">
@@ -208,24 +299,44 @@ const LockerPage = () => {
         ))}
       </div>
 
+      {/* Color disabled notice */}
+      {(filter === "all" || filter === "color") && !colorEnabled && (
+        <div className="mx-6 mt-3 flex items-start gap-2 bg-muted/60 border border-border rounded-2xl px-3 py-2">
+          <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-muted-foreground font-semibold">
+            <span className="capitalize">{cosmetics.shape}</span> has a fixed look — no color options for this animal. Switch to a Bunny, Bear, Cat or Fox to unlock color tints.
+          </p>
+        </div>
+      )}
+
       {/* Inventory Grid */}
       <div className="grid grid-cols-2 gap-3 px-6 mt-4 pb-32">
         {filtered.map((item) => {
           const Icon = rarityIcon[item.rarity];
           const equipped = isEquipped(item);
+          const owned = isOwned(item);
+          const isColor = item.type === "color";
+          const colorDisabled = isColor && !colorEnabled;
+          const disabled = !owned || colorDisabled;
           return (
             <motion.button
               key={item.id}
               layout
-              whileTap={{ scale: 0.96 }}
+              whileTap={disabled ? undefined : { scale: 0.96 }}
               onClick={() => toggleEquip(item)}
+              disabled={disabled}
               className={`relative bg-gradient-to-br ${rarityBg[item.rarity]} rounded-3xl p-3 text-left border-2 transition-all ${
                 equipped ? "border-primary shadow-soft" : "border-transparent"
-              }`}
+              } ${disabled ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
             >
               {equipped && (
                 <span className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-0.5 z-10">
                   <Check className="w-3 h-3" />
+                </span>
+              )}
+              {!owned && (
+                <span className="absolute top-2 right-2 bg-card text-muted-foreground rounded-full p-1 z-10 border border-border">
+                  <Lock className="w-3 h-3" />
                 </span>
               )}
 
@@ -256,6 +367,8 @@ const LockerPage = () => {
                 <Icon className={`w-3 h-3 ${rarityColor[item.rarity]}`} />
                 <p className={`text-[9px] font-semibold ${rarityColor[item.rarity]}`}>
                   {item.rarity} · {item.type === "streakColor" ? "streak" : item.type}
+                  {colorDisabled && " · N/A for this animal"}
+                  {!owned && !colorDisabled && " · locked"}
                 </p>
               </div>
             </motion.button>
