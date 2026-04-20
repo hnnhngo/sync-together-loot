@@ -220,13 +220,13 @@ const PandaPatches = () => (
 
 /* ----- Cosmetic overlays ----- */
 
-const Hat = ({ kind }: { kind: HatKey }) => {
+const Hat = ({ kind, tint }: { kind: HatKey; tint?: string }) => {
   switch (kind) {
     case "crown":
       return (
         <g>
           <path d="M28,12 L36,22 L44,8 L50,20 L56,8 L64,22 L72,12 L70,28 L30,28 Z"
-            fill="hsl(45 90% 60%)" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
+            fill={tint ?? "hsl(45 90% 60%)"} stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
           <circle cx="44" cy="9" r="2" fill="hsl(340 80% 65%)" stroke={INK} strokeWidth="0.8" />
           <circle cx="56" cy="9" r="2" fill="hsl(205 70% 55%)" stroke={INK} strokeWidth="0.8" />
           <circle cx="50" cy="22" r="2.5" fill="hsl(340 80% 65%)" stroke={INK} strokeWidth="0.8" />
@@ -235,16 +235,16 @@ const Hat = ({ kind }: { kind: HatKey }) => {
     case "beanie":
       return (
         <g>
-          <path d="M24,26 Q26,4 50,4 Q74,4 76,26 Z" fill="hsl(340 60% 70%)" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
-          <rect x="22" y="22" width="56" height="8" rx="3" fill="hsl(340 50% 60%)" stroke={INK} strokeWidth="1.4" />
+          <path d="M24,26 Q26,4 50,4 Q74,4 76,26 Z" fill={tint ?? "hsl(340 60% 70%)"} stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
+          <rect x="22" y="22" width="56" height="8" rx="3" fill={tint ?? "hsl(340 50% 60%)"} stroke={INK} strokeWidth="1.4" opacity={tint ? 0.75 : 1} />
           <circle cx="50" cy="2" r="4" fill="hsl(0 0% 100%)" stroke={INK} strokeWidth="1.4" />
         </g>
       );
     case "topHat":
       return (
         <g>
-          <rect x="34" y="0" width="32" height="22" rx="2" fill="hsl(240 25% 20%)" stroke={INK} strokeWidth="1.4" />
-          <rect x="24" y="20" width="52" height="6" rx="2" fill="hsl(240 25% 20%)" stroke={INK} strokeWidth="1.4" />
+          <rect x="34" y="0" width="32" height="22" rx="2" fill={tint ?? "hsl(240 25% 20%)"} stroke={INK} strokeWidth="1.4" />
+          <rect x="24" y="20" width="52" height="6" rx="2" fill={tint ?? "hsl(240 25% 20%)"} stroke={INK} strokeWidth="1.4" />
           <rect x="34" y="14" width="32" height="3" fill="hsl(340 70% 60%)" />
         </g>
       );
@@ -252,15 +252,15 @@ const Hat = ({ kind }: { kind: HatKey }) => {
       return (
         <g>
           <g transform="translate(28 14)">
-            <circle r="5" fill="hsl(340 75% 78%)" stroke={INK} strokeWidth="1" />
+            <circle r="5" fill={tint ?? "hsl(340 75% 78%)"} stroke={INK} strokeWidth="1" />
             <circle r="1.6" fill="hsl(45 80% 60%)" />
           </g>
           <g transform="translate(50 8)">
-            <circle r="6" fill="hsl(265 60% 80%)" stroke={INK} strokeWidth="1" />
+            <circle r="6" fill={tint ?? "hsl(265 60% 80%)"} stroke={INK} strokeWidth="1" />
             <circle r="2" fill="hsl(45 80% 60%)" />
           </g>
           <g transform="translate(72 14)">
-            <circle r="5" fill="hsl(160 50% 75%)" stroke={INK} strokeWidth="1" />
+            <circle r="5" fill={tint ?? "hsl(160 50% 75%)"} stroke={INK} strokeWidth="1" />
             <circle r="1.6" fill="hsl(45 80% 60%)" />
           </g>
           <g transform="translate(40 18)">
@@ -274,15 +274,15 @@ const Hat = ({ kind }: { kind: HatKey }) => {
     case "halo":
       return (
         <g>
-          <ellipse cx="50" cy="6" rx="18" ry="4" fill="none" stroke="hsl(45 95% 60%)" strokeWidth="3" />
+          <ellipse cx="50" cy="6" rx="18" ry="4" fill="none" stroke={tint ?? "hsl(45 95% 60%)"} strokeWidth="3" />
           <ellipse cx="50" cy="6" rx="18" ry="4" fill="none" stroke="white" strokeWidth="1" />
         </g>
       );
     case "graduationCap":
       return (
         <g>
-          <path d="M14,18 L50,6 L86,18 L50,30 Z" fill="hsl(240 25% 20%)" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
-          <rect x="42" y="20" width="16" height="10" rx="1" fill="hsl(240 25% 20%)" stroke={INK} strokeWidth="1.4" />
+          <path d="M14,18 L50,6 L86,18 L50,30 Z" fill={tint ?? "hsl(240 25% 20%)"} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+          <rect x="42" y="20" width="16" height="10" rx="1" fill={tint ?? "hsl(240 25% 20%)"} stroke={INK} strokeWidth="1.4" />
           <line x1="78" y1="14" x2="82" y2="30" stroke="hsl(45 80% 60%)" strokeWidth="2" />
           <circle cx="82" cy="32" r="2.5" fill="hsl(45 80% 60%)" />
         </g>
@@ -290,7 +290,7 @@ const Hat = ({ kind }: { kind: HatKey }) => {
     case "neonVisor":
       return (
         <g>
-          <rect x="20" y="14" width="60" height="10" rx="5" fill="hsl(285 80% 50%)" stroke={INK} strokeWidth="1.4" />
+          <rect x="20" y="14" width="60" height="10" rx="5" fill={tint ?? "hsl(285 80% 50%)"} stroke={INK} strokeWidth="1.4" />
           <rect x="22" y="16" width="56" height="3" fill="hsl(285 100% 80%)" opacity="0.7" />
         </g>
       );
@@ -299,11 +299,11 @@ const Hat = ({ kind }: { kind: HatKey }) => {
   }
 };
 
-const Glasses = ({ kind }: { kind: GlassesKey }) => {
+const Glasses = ({ kind, tint }: { kind: GlassesKey; tint?: string }) => {
   switch (kind) {
     case "round":
       return (
-        <g fill="none" stroke={INK} strokeWidth="1.8">
+        <g fill="none" stroke={tint ?? INK} strokeWidth="1.8">
           <circle cx="38" cy="50" r="9" fill="hsl(0 0% 100% / 0.4)" />
           <circle cx="62" cy="50" r="9" fill="hsl(0 0% 100% / 0.4)" />
           <line x1="47" y1="50" x2="53" y2="50" />
@@ -312,8 +312,8 @@ const Glasses = ({ kind }: { kind: GlassesKey }) => {
     case "shades":
       return (
         <g stroke={INK} strokeWidth="1.6">
-          <rect x="28" y="44" width="20" height="12" rx="3" fill="hsl(240 30% 20%)" />
-          <rect x="52" y="44" width="20" height="12" rx="3" fill="hsl(240 30% 20%)" />
+          <rect x="28" y="44" width="20" height="12" rx="3" fill={tint ?? "hsl(240 30% 20%)"} />
+          <rect x="52" y="44" width="20" height="12" rx="3" fill={tint ?? "hsl(240 30% 20%)"} />
           <line x1="48" y1="50" x2="52" y2="50" />
           <line x1="32" y1="46" x2="36" y2="46" stroke="white" strokeWidth="1.2" />
           <line x1="56" y1="46" x2="60" y2="46" stroke="white" strokeWidth="1.2" />
@@ -321,7 +321,7 @@ const Glasses = ({ kind }: { kind: GlassesKey }) => {
       );
     case "heart":
       return (
-        <g stroke={INK} strokeWidth="1.6" fill="hsl(340 80% 75% / 0.6)">
+        <g stroke={INK} strokeWidth="1.6" fill={tint ?? "hsl(340 80% 75% / 0.6)"}>
           <path d="M30,46 C28,42 32,40 34,44 C36,40 40,42 38,46 L34,52 Z" />
           <path d="M62,46 C60,42 64,40 66,44 C68,40 72,42 70,46 L66,52 Z" />
         </g>
@@ -331,21 +331,20 @@ const Glasses = ({ kind }: { kind: GlassesKey }) => {
   }
 };
 
-const Outfit = ({ kind }: { kind: OutfitKey }) => {
+const Outfit = ({ kind, tint }: { kind: OutfitKey; tint?: string }) => {
   switch (kind) {
     case "scarf":
       return (
         <g>
-          <path d="M22,72 Q50,80 78,72 L80,82 Q50,90 20,82 Z" fill="hsl(340 70% 65%)" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
-          <path d="M30,82 L26,98 L34,98 L36,84 Z" fill="hsl(340 70% 65%)" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
-          {/* stripes */}
+          <path d="M22,72 Q50,80 78,72 L80,82 Q50,90 20,82 Z" fill={tint ?? "hsl(340 70% 65%)"} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M30,82 L26,98 L34,98 L36,84 Z" fill={tint ?? "hsl(340 70% 65%)"} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
           <line x1="26" y1="76" x2="78" y2="74" stroke="white" strokeWidth="1.2" opacity="0.7" />
         </g>
       );
     case "cape":
       return (
         <g>
-          <path d="M14,40 Q50,98 86,40 L92,90 Q50,108 8,90 Z" fill="hsl(265 60% 55%)" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" opacity="0.92" />
+          <path d="M14,40 Q50,98 86,40 L92,90 Q50,108 8,90 Z" fill={tint ?? "hsl(265 60% 55%)"} stroke={INK} strokeWidth="1.6" strokeLinejoin="round" opacity="0.92" />
           <circle cx="30" cy="42" r="3" fill="hsl(45 90% 60%)" stroke={INK} strokeWidth="1" />
           <circle cx="70" cy="42" r="3" fill="hsl(45 90% 60%)" stroke={INK} strokeWidth="1" />
         </g>
@@ -353,27 +352,24 @@ const Outfit = ({ kind }: { kind: OutfitKey }) => {
     case "bowtie":
       return (
         <g transform="translate(50 78)">
-          <path d="M0,0 L-12,-6 L-12,6 Z" fill="hsl(0 70% 55%)" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
-          <path d="M0,0 L12,-6 L12,6 Z" fill="hsl(0 70% 55%)" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
-          <rect x="-3" y="-4" width="6" height="8" rx="1" fill="hsl(0 70% 45%)" stroke={INK} strokeWidth="1" />
+          <path d="M0,0 L-12,-6 L-12,6 Z" fill={tint ?? "hsl(0 70% 55%)"} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M0,0 L12,-6 L12,6 Z" fill={tint ?? "hsl(0 70% 55%)"} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+          <rect x="-3" y="-4" width="6" height="8" rx="1" fill={tint ?? "hsl(0 70% 45%)"} stroke={INK} strokeWidth="1" />
         </g>
       );
     case "spaceCollab":
       return (
         <g>
-          {/* astronaut helmet ring */}
           <ellipse cx="50" cy="78" rx="24" ry="6" fill="hsl(0 0% 100%)" stroke={INK} strokeWidth="1.6" />
-          <rect x="34" y="76" width="32" height="4" fill="hsl(205 70% 55%)" />
-          {/* small star patch */}
+          <rect x="34" y="76" width="32" height="4" fill={tint ?? "hsl(205 70% 55%)"} />
           <path d="M68,72 L70,76 L74,76 L71,79 L72,83 L68,81 L64,83 L65,79 L62,76 L66,76 Z" fill="hsl(45 90% 60%)" stroke={INK} strokeWidth="0.8" />
         </g>
       );
     case "kawaiiApron":
       return (
         <g>
-          <path d="M30,72 L70,72 L74,96 L26,96 Z" fill="hsl(340 50% 88%)" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M30,72 L70,72 L74,96 L26,96 Z" fill={tint ?? "hsl(340 50% 88%)"} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
           <rect x="38" y="78" width="24" height="4" rx="1" fill="hsl(340 60% 75%)" stroke={INK} strokeWidth="1" />
-          {/* heart pocket */}
           <path d="M50,86 C46,82 42,86 46,90 L50,94 L54,90 C58,86 54,82 50,86 Z" fill="hsl(0 70% 65%)" stroke={INK} strokeWidth="1" />
         </g>
       );
@@ -512,6 +508,9 @@ const BlobChar = ({
   hat = "none",
   outfit = "none",
   glasses = "none",
+  hatTint,
+  outfitTint,
+  glassesTint,
 }: BlobCharProps) => {
   return (
     <motion.button
@@ -527,9 +526,9 @@ const BlobChar = ({
     >
       <svg viewBox="0 0 100 100" width={size} height={size}>
         {renderAnimal(shape, color, mood, isSyn)}
-        {outfit !== "none" && <Outfit kind={outfit} />}
-        {glasses !== "none" && <Glasses kind={glasses} />}
-        {hat !== "none" && <Hat kind={hat} />}
+        {outfit !== "none" && <Outfit kind={outfit} tint={outfitTint} />}
+        {glasses !== "none" && <Glasses kind={glasses} tint={glassesTint} />}
+        {hat !== "none" && <Hat kind={hat} tint={hatTint} />}
       </svg>
     </motion.button>
   );
