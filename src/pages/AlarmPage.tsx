@@ -99,10 +99,39 @@ const TimeDial = ({
 
   const isPM = hour >= 12;
 
+  const clampHour = (n: number) => Math.max(0, Math.min(23, n));
+  const clampMin = (n: number) => Math.max(0, Math.min(59, n));
+
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="flex items-center gap-3">
-        <span className="text-3xl font-bold text-foreground tabular-nums">{formatTime(hour, minute)}</span>
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={23}
+          value={hour.toString().padStart(2, "0")}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            if (Number.isFinite(n)) onChange(clampHour(n), minute);
+          }}
+          className="w-16 h-12 text-center text-2xl font-bold tabular-nums rounded-2xl px-1"
+          aria-label="Hour"
+        />
+        <span className="text-2xl font-bold text-foreground">:</span>
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={59}
+          value={minute.toString().padStart(2, "0")}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            if (Number.isFinite(n)) onChange(hour, clampMin(n));
+          }}
+          className="w-16 h-12 text-center text-2xl font-bold tabular-nums rounded-2xl px-1"
+          aria-label="Minute"
+        />
         <button
           onClick={() => onChange(isPM ? hour - 12 : hour + 12, minute)}
           className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
@@ -112,6 +141,7 @@ const TimeDial = ({
           {isPM ? "PM" : "AM"}
         </button>
       </div>
+      <p className="text-[10px] text-muted-foreground font-semibold">Type the time or drag the hands below</p>
       <svg
         ref={svgRef}
         width={DIAL_SIZE}

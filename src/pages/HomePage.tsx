@@ -50,31 +50,88 @@ const HomePage = () => {
   // Visual streak: render a row of flame icons, intensity grows with streak
   const flamesToShow = Math.min(7, streak);
 
+  // Decorative tier (0–4): higher = more extreme & decorative UI
+  // Thresholds: 0 (0d), 1 (3d), 2 (7d), 3 (14d), 4 (30d+)
+  const decoTier = streak >= 30 ? 4 : streak >= 14 ? 3 : streak >= 7 ? 2 : streak >= 3 ? 1 : 0;
+  const auraIntensity = [0.18, 0.32, 0.5, 0.7, 0.95][decoTier];
+  const ringCount = [0, 1, 2, 3, 4][decoTier];
+  const sparkleCount = [0, 3, 6, 10, 16][decoTier];
+  const toHex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
+
   return (
     <div
-      className="min-h-screen transition-colors duration-700"
+      className="min-h-screen relative overflow-hidden transition-colors duration-700"
       style={{
-        background: `linear-gradient(180deg, ${streakColor.from}33, hsl(var(--background)) 60%)`,
+        background: `
+          radial-gradient(circle at 20% 0%, ${streakColor.from}${toHex(auraIntensity * 200)}, transparent 55%),
+          radial-gradient(circle at 80% 10%, ${streakColor.to}${toHex(auraIntensity * 150)}, transparent 50%),
+          linear-gradient(180deg, ${streakColor.from}${toHex(auraIntensity * 120)}, hsl(var(--background)) ${70 - decoTier * 8}%)
+        `,
       }}
     >
+      {/* Decorative floating sparkles — escalate with streak */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        {Array.from({ length: sparkleCount }).map((_, i) => {
+          const left = (i * 53) % 100;
+          const top = (i * 37) % 90;
+          const delay = (i % 5) * 0.4;
+          const sz = 6 + (i % 4) * 3;
+          return (
+            <motion.div
+              key={i}
+              className="absolute"
+              style={{ left: `${left}%`, top: `${top}%`, width: sz, height: sz }}
+              animate={{ y: [0, -10, 0], opacity: [0.3, 0.9, 0.3], rotate: [0, 180, 360] }}
+              transition={{ repeat: Infinity, duration: 3 + (i % 3), delay, ease: "easeInOut" }}
+            >
+              <Sparkles className="w-full h-full" style={{ color: streakColor.from }} />
+            </motion.div>
+          );
+        })}
+      </div>
+
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-2">
+      <div className="relative flex items-center justify-between px-5 pt-12 pb-2">
         <div>
           <p className="text-xs font-semibold text-muted-foreground">Welcome back</p>
           <h1 className="text-2xl font-bold text-foreground">Hi, friend ✿</h1>
         </div>
-        <div className="flex items-center gap-1.5 bg-card rounded-full px-3 py-1.5 shadow-soft border border-border">
+        <div
+          className="flex items-center gap-1.5 bg-card rounded-full px-3 py-1.5 shadow-soft border"
+          style={{ borderColor: decoTier >= 2 ? streakColor.from : "hsl(var(--border))" }}
+        >
           <Coins className="w-4 h-4 text-warm-gold" />
           <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
         </div>
       </div>
 
       {/* Mascot + Streak */}
-      <div className="px-6 pt-6 pb-2 text-center relative">
+      <div className="relative px-6 pt-6 pb-2 text-center">
+        {/* Decorative concentric rings — only render at higher tiers */}
+        {Array.from({ length: ringCount }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute left-1/2 top-6 -translate-x-1/2 rounded-full pointer-events-none"
+            style={{
+              width: 180 + i * 40,
+              height: 180 + i * 40,
+              border: `2px dashed ${streakColor.from}`,
+              opacity: 0.35 - i * 0.06,
+            }}
+            animate={{ rotate: i % 2 === 0 ? 360 : -360 }}
+            transition={{ repeat: Infinity, duration: 18 + i * 6, ease: "linear" }}
+            aria-hidden
+          />
+        ))}
+
         {/* Soft aura-tinted backdrop */}
         <div
-          className="absolute left-1/2 top-2 -translate-x-1/2 w-52 h-52 blob-shape opacity-60"
-          style={{ background: `radial-gradient(circle at 40% 40%, ${streakColor.from}, ${streakColor.to}55 70%, transparent)` }}
+          className="absolute left-1/2 top-2 -translate-x-1/2 w-52 h-52 blob-shape"
+          style={{
+            background: `radial-gradient(circle at 40% 40%, ${streakColor.from}, ${streakColor.to}55 70%, transparent)`,
+            opacity: 0.5 + decoTier * 0.1,
+            filter: decoTier >= 3 ? `drop-shadow(0 0 24px ${streakColor.from})` : undefined,
+          }}
           aria-hidden
         />
 
@@ -107,12 +164,12 @@ const HomePage = () => {
         <div className="mt-3 flex items-end justify-center gap-1 h-10" aria-label={`${streak} day streak`}>
           {Array.from({ length: 7 }, (_, i) => {
             const lit = i < flamesToShow;
-            const sizePx = lit ? 22 + Math.min(i, 4) * 2 : 16;
+            const sizePx = lit ? 22 + Math.min(i, 4) * 2 + decoTier * 2 : 16;
             return (
               <motion.div
                 key={i}
                 initial={false}
-                animate={lit ? { y: [0, -2, 0], scale: [1, 1.05, 1] } : { y: 0, scale: 1 }}
+                animate={lit ? { y: [0, -2 - decoTier, 0], scale: [1, 1.05 + decoTier * 0.04, 1] } : { y: 0, scale: 1 }}
                 transition={lit ? { repeat: Infinity, duration: 1.6 + i * 0.15, ease: "easeInOut" } : {}}
                 style={{
                   width: sizePx,
@@ -127,6 +184,7 @@ const HomePage = () => {
                   WebkitMaskSize: "contain",
                   maskSize: "contain",
                   opacity: lit ? 1 : 0.35,
+                  filter: lit && decoTier >= 3 ? `drop-shadow(0 0 6px ${streakColor.from})` : undefined,
                 }}
               />
             );
@@ -137,13 +195,31 @@ const HomePage = () => {
           key={streak}
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="inline-flex items-center gap-2 bg-card rounded-full px-4 py-2 shadow-soft border border-border mt-2"
+          className="inline-flex items-center gap-2 bg-card rounded-full px-4 py-2 shadow-soft mt-2 border-2"
+          style={{
+            borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
+            boxShadow: decoTier >= 2 ? `0 0 ${10 + decoTier * 6}px ${streakColor.from}66` : undefined,
+          }}
         >
           <Flame className={`w-5 h-5 ${streakColor.flameClass}`} fill="currentColor" />
           <p className="text-xl font-bold text-foreground leading-none">{streak}</p>
           <span className="text-xs font-bold text-muted-foreground">day streak</span>
           <span className={`text-xs font-bold ${streakColor.flameClass}`}>· {tierLabel}</span>
         </motion.div>
+
+        {decoTier >= 4 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="block mt-2 mx-auto w-fit px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider"
+            style={{
+              background: `linear-gradient(90deg, ${streakColor.from}, ${streakColor.to})`,
+              color: "white",
+            }}
+          >
+            ✦ Legendary streak ✦
+          </motion.div>
+        )}
       </div>
 
       <div className="px-6 mt-5">
