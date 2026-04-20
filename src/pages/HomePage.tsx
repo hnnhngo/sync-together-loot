@@ -4,6 +4,8 @@ import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
 import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
+import { useCoins, coinsStore } from "@/lib/coins-store";
+import { findVariant } from "@/lib/accessory-variants";
 
 const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
 const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
@@ -20,8 +22,8 @@ const dailyRewards = [
 
 const HomePage = () => {
   const cosmetics = useCosmetics();
+  const { points } = useCoins();
   const [streak, setStreak] = useState(3);
-  const [points, setPoints] = useState(1250);
   const [showDailyLogin, setShowDailyLogin] = useState(true);
   const [claimedToday, setClaimedToday] = useState(false);
   const [tapCount, setTapCount] = useState(0);
@@ -30,11 +32,14 @@ const HomePage = () => {
   const tierLabel = tierLabels[tier];
   const tierMood = tierMoods[tier];
   const streakColor = STREAK_COLORS[cosmetics.streakColor];
+  const hatVariant = findVariant(cosmetics.equippedHatVariant);
+  const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
+  const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
 
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
     if (reward) {
-      setPoints((p) => p + reward.coins);
+      coinsStore.add(reward.coins);
       setClaimedToday(true);
       setStreak((s) => s + 1);
     }
