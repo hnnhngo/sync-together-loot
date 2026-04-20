@@ -36,6 +36,10 @@ interface StudyGroup {
   active: boolean;
   multiplier: number;
   subject: string;
+  joinable: boolean;
+  joined: boolean;
+  requested?: boolean;
+  invited?: boolean;
 }
 
 const friends: Friend[] = [
@@ -46,9 +50,8 @@ const friends: Friend[] = [
   { id: 5, name: "Morgan", shape: "panda", color: "orange", mood: "happy", status: "idle", streak: 15, level: 30, studyHours: 210, cosmetics: { aura: "Gold Streak", frame: "Phoenix Frame", accessory: "Top Hat" }, bio: "Top of the leaderboard" },
 ];
 
-const studyGroups: StudyGroup[] = [
-  {
-    id: 1, name: "Math Squad", active: true, multiplier: 2.5, subject: "Calculus II",
+const initialGroups: StudyGroup[] = [
+  { id: 1, name: "Math Squad", active: true, multiplier: 2.5, subject: "Calculus II", joinable: true, joined: true,
     members: [
       { name: "Alex", shape: "fox", color: "pink" },
       { name: "Sam", shape: "frog", color: "mint" },
@@ -56,27 +59,31 @@ const studyGroups: StudyGroup[] = [
       { name: "You", shape: "capybara", color: "blue" },
     ],
   },
-  {
-    id: 2, name: "Essay Club", active: false, multiplier: 1.0, subject: "English 201",
+  { id: 2, name: "Essay Club", active: false, multiplier: 1.0, subject: "English 201", joinable: true, joined: true,
     members: [
       { name: "Jordan", shape: "bunny", color: "lavender" },
       { name: "Taylor", shape: "chick", color: "yellow" },
       { name: "You", shape: "capybara", color: "blue" },
     ],
   },
+  { id: 3, name: "Physics Lab Crew", active: false, multiplier: 1.5, subject: "Physics 102", joinable: true, joined: false, invited: true,
+    members: [
+      { name: "Riley", shape: "bear", color: "coral" },
+      { name: "Casey", shape: "cat", color: "lavender" },
+    ],
+  },
+  { id: 4, name: "CS Night Owls", active: false, multiplier: 1.8, subject: "Algorithms", joinable: true, joined: false,
+    members: [
+      { name: "Sky", shape: "fox", color: "yellow" },
+      { name: "Dev", shape: "panda", color: "blue" },
+    ],
+  },
 ];
 
-const statusColors = {
-  studying: "bg-blob-sage",
-  idle: "bg-warm-gold",
-  offline: "bg-muted-foreground/40",
-};
+const MY_FRIEND_CODE = "SYN-9F3K-2X7Q";
 
-const statusLabels = {
-  studying: "Studying",
-  idle: "Idle",
-  offline: "Offline",
-};
+const statusColors = { studying: "bg-blob-sage", idle: "bg-warm-gold", offline: "bg-muted-foreground/40" };
+const statusLabels = { studying: "Studying", idle: "Idle", offline: "Offline" };
 
 const CrewPage = () => {
   const [tab, setTab] = useState<"friends" | "groups">("friends");
