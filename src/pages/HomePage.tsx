@@ -4,6 +4,8 @@ import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
 import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
+import { useCoins, coinsStore } from "@/lib/coins-store";
+import { findVariant } from "@/lib/accessory-variants";
 
 const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
 const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
@@ -20,8 +22,8 @@ const dailyRewards = [
 
 const HomePage = () => {
   const cosmetics = useCosmetics();
+  const { points } = useCoins();
   const [streak, setStreak] = useState(3);
-  const [points, setPoints] = useState(1250);
   const [showDailyLogin, setShowDailyLogin] = useState(true);
   const [claimedToday, setClaimedToday] = useState(false);
   const [tapCount, setTapCount] = useState(0);
@@ -30,11 +32,14 @@ const HomePage = () => {
   const tierLabel = tierLabels[tier];
   const tierMood = tierMoods[tier];
   const streakColor = STREAK_COLORS[cosmetics.streakColor];
+  const hatVariant = findVariant(cosmetics.equippedHatVariant);
+  const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
+  const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
 
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
     if (reward) {
-      setPoints((p) => p + reward.coins);
+      coinsStore.add(reward.coins);
       setClaimedToday(true);
       setStreak((s) => s + 1);
     }
@@ -97,8 +102,13 @@ const HomePage = () => {
           <h1 className="text-2xl font-bold text-foreground">Hi, friend ✿</h1>
         </div>
         <div
-          className="flex items-center gap-1.5 bg-card rounded-full px-3 py-1.5 shadow-soft border"
-          style={{ borderColor: decoTier >= 2 ? streakColor.from : "hsl(var(--border))" }}
+          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border"
+          style={{
+            borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
+            background: decoTier >= 1
+              ? `linear-gradient(135deg, ${streakColor.from}22, ${streakColor.to}11)`
+              : "hsl(var(--card))",
+          }}
         >
           <Coins className="w-4 h-4 text-warm-gold" />
           <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
@@ -142,6 +152,9 @@ const HomePage = () => {
             hat={cosmetics.hat}
             outfit={cosmetics.outfit}
             glasses={cosmetics.glasses}
+            hatTint={hatVariant?.primary}
+            outfitTint={outfitVariant?.primary}
+            glassesTint={glassesVariant?.primary}
             mood={synMood}
             size={150}
             onClick={handleSynTap}
@@ -244,7 +257,11 @@ const HomePage = () => {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            className="mx-6 mt-6 bg-card rounded-3xl p-5 shadow-soft border border-border"
+            className="mx-6 mt-6 rounded-3xl p-5 shadow-soft border-2"
+            style={{
+              borderColor: `${streakColor.from}55`,
+              background: `linear-gradient(135deg, hsl(var(--card)), ${streakColor.from}18)`,
+            }}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -296,10 +313,13 @@ const HomePage = () => {
               onClick={handleClaim}
               disabled={claimedToday}
               className={`w-full py-3 rounded-2xl text-sm font-bold transition-colors ${
-                claimedToday
-                  ? "bg-muted text-muted-foreground"
-                  : "bg-primary text-primary-foreground shadow-pop"
+                claimedToday ? "bg-muted text-muted-foreground" : "text-white shadow-pop"
               }`}
+              style={
+                claimedToday
+                  ? undefined
+                  : { background: `linear-gradient(135deg, ${streakColor.from}, ${streakColor.to})` }
+              }
             >
               {claimedToday ? "Claimed today ✓" : "Claim 20 coins"}
             </motion.button>
