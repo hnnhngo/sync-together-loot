@@ -102,8 +102,13 @@ const HomePage = () => {
           <h1 className="text-2xl font-bold text-foreground">Hi, friend ✿</h1>
         </div>
         <div
-          className="flex items-center gap-1.5 bg-card rounded-full px-3 py-1.5 shadow-soft border"
-          style={{ borderColor: decoTier >= 2 ? streakColor.from : "hsl(var(--border))" }}
+          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border"
+          style={{
+            borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
+            background: decoTier >= 1
+              ? `linear-gradient(135deg, ${streakColor.from}22, ${streakColor.to}11)`
+              : "hsl(var(--card))",
+          }}
         >
           <Coins className="w-4 h-4 text-warm-gold" />
           <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
@@ -147,6 +152,9 @@ const HomePage = () => {
             hat={cosmetics.hat}
             outfit={cosmetics.outfit}
             glasses={cosmetics.glasses}
+            hatTint={hatVariant?.primary}
+            outfitTint={outfitVariant?.primary}
+            glassesTint={glassesVariant?.primary}
             mood={synMood}
             size={150}
             onClick={handleSynTap}
