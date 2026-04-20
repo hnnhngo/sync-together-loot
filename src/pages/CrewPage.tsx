@@ -90,6 +90,13 @@ const CrewPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [nudgedIds, setNudgedIds] = useState<number[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const [groups, setGroups] = useState<StudyGroup[]>(initialGroups);
+  const [friendCodeInput, setFriendCodeInput] = useState("");
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [suggestForGroup, setSuggestForGroup] = useState<StudyGroup | null>(null);
+  const [suggestTime, setSuggestTime] = useState("19:00");
+  const [suggestLabel, setSuggestLabel] = useState("Study Session");
 
   const handleNudge = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -101,17 +108,63 @@ const CrewPage = () => {
     f.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const copyCode = async () => {
+    try { await navigator.clipboard.writeText(MY_FRIEND_CODE); } catch {}
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 1500);
+  };
+
+  const addFriendByCode = () => {
+    if (!friendCodeInput.trim()) return;
+    toast({ title: "Friend request sent!", description: `Code ${friendCodeInput.toUpperCase()} — they'll be notified.` });
+    setFriendCodeInput("");
+  };
+
+  const requestJoin = (id: number) => {
+    setGroups((prev) => prev.map((g) => g.id === id ? { ...g, requested: true } : g));
+    toast({ title: "Request sent", description: "We'll let you know when they accept!" });
+  };
+
+  const acceptInvite = (id: number) => {
+    setGroups((prev) => prev.map((g) => g.id === id ? {
+      ...g, joined: true, invited: false,
+      members: [...g.members, { name: "You", shape: "capybara" as BlobShape, color: "blue" as BlobColor }],
+    } : g));
+    toast({ title: "Joined!", description: "Welcome to the group 🎉" });
+  };
+
+  const sendSuggestedAlarm = () => {
+    if (!suggestForGroup) return;
+    toast({
+      title: `Alarm suggested to ${suggestForGroup.name}`,
+      description: `${suggestLabel} at ${suggestTime} — members will get a notification to vote.`,
+    });
+    setSuggestForGroup(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Crew</h1>
-        <button className="bg-primary text-primary-foreground rounded-full p-2 shadow-pop">
+        <button onClick={() => setShowAddFriend(true)} className="bg-primary text-primary-foreground rounded-full p-2 shadow-pop">
           <UserPlus className="w-5 h-5" />
         </button>
       </div>
 
       <div className="px-6 mt-2">
-        <MascotBubble message="Tap a friend to see their profile! Nudge the idle ones to earn bonus coins together 🤝" />
+        <MascotBubble message="Tap a friend for their profile! Share your friend code to add new buddies, and join study groups to grind together 🤝" />
+      </div>
+
+      {/* Friend code card */}
+      <div className="mx-6 mt-3 bg-gradient-to-br from-blob-pink/15 to-blob-blue/15 border border-border rounded-2xl p-3 flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Your friend code</p>
+          <p className="text-base font-bold text-foreground tabular-nums">{MY_FRIEND_CODE}</p>
+        </div>
+        <button onClick={copyCode} className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground">
+          {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
+          {codeCopied ? "Copied!" : "Copy"}
+        </button>
       </div>
 
       {/* Tabs */}
