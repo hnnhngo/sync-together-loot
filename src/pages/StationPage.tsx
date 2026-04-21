@@ -158,7 +158,7 @@ const StationPage = () => {
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [dupeCoins, setDupeCoins] = useState(0);
   const [history, setHistory] = useState<GachaItem[]>([]);
-  const [tab, setTab] = useState<"banners" | "colorLab">("banners");
+  const [tab, setTab] = useState<"banners" | "animals" | "colorLab">("banners");
 
   // Rotating color lab items (seed changes daily)
   const daySeed = useMemo(() => Math.floor(Date.now() / 86400000), []);
@@ -231,12 +231,15 @@ const StationPage = () => {
         <MascotBubble message="Pull from banners for accessories! Duplicates give coins back 💰 Visit the Color Lab for alt skins!" />
       </div>
 
-      {/* Tab: Banners vs Color Lab */}
+      {/* Tabs: Banners / Animals / Color Lab */}
       <div className="flex gap-2 px-6 mt-4">
-        <button onClick={() => setTab("banners")} className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-colors ${tab === "banners" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
+        <button onClick={() => setTab("banners")} className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-colors ${tab === "banners" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
           <Gift className="w-4 h-4 inline mr-1" /> Banners
         </button>
-        <button onClick={() => setTab("colorLab")} className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-colors ${tab === "colorLab" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
+        <button onClick={() => setTab("animals")} className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-colors ${tab === "animals" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
+          <PawPrint className="w-4 h-4 inline mr-1" /> Animals
+        </button>
+        <button onClick={() => setTab("colorLab")} className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-colors ${tab === "colorLab" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
           <Palette className="w-4 h-4 inline mr-1" /> Color Lab
         </button>
       </div>
