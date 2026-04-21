@@ -449,6 +449,180 @@ const CrewPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Add Friend modal */}
+      <AnimatePresence>
+        {showAddFriend && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center"
+            onClick={() => setShowAddFriend(false)}
+          >
+            <motion.div
+              initial={{ y: 400, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 400, opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-t-[2rem] sm:rounded-3xl w-full max-w-md p-6 pb-10 relative"
+            >
+              <div className="w-10 h-1.5 rounded-full bg-muted mx-auto mb-3 sm:hidden" />
+              <button
+                onClick={() => setShowAddFriend(false)}
+                className="absolute right-5 top-5 bg-muted rounded-full p-1.5"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+
+              <div className="text-center mb-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blob-pink/30 to-blob-blue/30 flex items-center justify-center mb-2">
+                  <UserPlus className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Add a friend</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Enter their friend code or share yours</p>
+              </div>
+
+              {/* Your code */}
+              <div className="bg-gradient-to-br from-blob-lavender/25 to-blob-blue/20 border border-border rounded-2xl p-3 mb-4">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Your code</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-base font-bold text-foreground tabular-nums">{MY_FRIEND_CODE}</p>
+                  <button
+                    onClick={copyCode}
+                    className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground"
+                  >
+                    {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
+                    {codeCopied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Code input */}
+              <label className="block text-xs font-bold text-foreground mb-1.5">Friend's code</label>
+              <input
+                type="text"
+                value={friendCodeInput}
+                onChange={(e) => setFriendCodeInput(e.target.value.toUpperCase())}
+                placeholder="SYN-XXXX-XXXX"
+                maxLength={14}
+                className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-base font-bold tabular-nums text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1.5">Codes are case-insensitive · Format: SYN-XXXX-XXXX</p>
+
+              <button
+                onClick={() => { addFriendByCode(); setShowAddFriend(false); }}
+                disabled={!friendCodeInput.trim()}
+                className="w-full mt-4 py-3 rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-pop disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-1.5"
+              >
+                <Send className="w-4 h-4" /> Send friend request
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Suggest Alarm modal */}
+      <AnimatePresence>
+        {suggestForGroup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center"
+            onClick={() => setSuggestForGroup(null)}
+          >
+            <motion.div
+              initial={{ y: 400, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 400, opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-t-[2rem] sm:rounded-3xl w-full max-w-md p-6 pb-10 relative"
+            >
+              <div className="w-10 h-1.5 rounded-full bg-muted mx-auto mb-3 sm:hidden" />
+              <button
+                onClick={() => setSuggestForGroup(null)}
+                className="absolute right-5 top-5 bg-muted rounded-full p-1.5"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+
+              <div className="text-center mb-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blob-yellow/40 to-blob-coral/30 flex items-center justify-center mb-2">
+                  <AlarmClock className="w-7 h-7 text-warm-gold" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Suggest an alarm</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  to <span className="font-bold text-foreground">{suggestForGroup.name}</span> · {suggestForGroup.members.length} members will vote
+                </p>
+              </div>
+
+              {/* Label */}
+              <label className="block text-xs font-bold text-foreground mb-1.5">What for?</label>
+              <input
+                type="text"
+                value={suggestLabel}
+                onChange={(e) => setSuggestLabel(e.target.value)}
+                placeholder="e.g. Calc review, Essay sprint…"
+                maxLength={40}
+                className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-sm font-semibold text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/40"
+              />
+
+              {/* Time */}
+              <label className="block text-xs font-bold text-foreground mt-3 mb-1.5">Time</label>
+              <input
+                type="time"
+                value={suggestTime}
+                onChange={(e) => setSuggestTime(e.target.value)}
+                className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-base font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+              />
+
+              {/* Quick times */}
+              <div className="flex gap-1.5 mt-2 flex-wrap">
+                {["07:00", "09:00", "14:00", "19:00", "21:00"].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setSuggestTime(t)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors ${
+                      suggestTime === t
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card border-border text-muted-foreground"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              {/* Member preview */}
+              <div className="mt-4 bg-muted/40 rounded-2xl p-3">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notifying</p>
+                <div className="flex items-center gap-1">
+                  {suggestForGroup.members.filter((m) => m.name !== "You").map((m, i) => (
+                    <div key={m.name} className="-ml-2 first:ml-0" style={{ zIndex: 10 - i }}>
+                      <div className="rounded-full border-2 border-card bg-cream">
+                        <BlobChar shape={m.shape} color={m.color} mood="happy" size={32} bounce={false} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={sendSuggestedAlarm}
+                disabled={!suggestLabel.trim() || !suggestTime}
+                className="w-full mt-4 py-3 rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-pop disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-1.5"
+              >
+                <Send className="w-4 h-4" /> Send suggestion
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
