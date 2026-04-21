@@ -360,11 +360,22 @@ const HomePage = () => {
         )}
       </AnimatePresence>
 
-      {/* Quick Stats - playful character cards */}
+      {/* Quests */}
+      <div className="px-6 mt-6">
+        <QuestsPanel fromColor={streakColor.from} toColor={streakColor.to} />
+      </div>
+
+      {/* Quick Stats - playful character cards with streak-tinted borders */}
       <div className="px-6 mt-6 pb-32">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-primary" />
+          <Sparkles className="w-4 h-4" style={{ color: streakColor.from }} />
           <h2 className="text-base font-bold text-foreground">Today's vibes</h2>
+          <span
+            className="ml-auto text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full text-white"
+            style={{ background: `linear-gradient(90deg, ${streakColor.from}, ${streakColor.to})` }}
+          >
+            {streakColor.name}
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -376,7 +387,11 @@ const HomePage = () => {
             <motion.div
               key={s.label}
               whileTap={{ scale: 0.97 }}
-              className={`${s.bg} rounded-3xl p-4 border border-border flex items-center gap-3`}
+              className={`${s.bg} rounded-3xl p-4 border-2 flex items-center gap-3 transition-shadow`}
+              style={{
+                borderColor: decoTier >= 1 ? `${streakColor.from}66` : "hsl(var(--border))",
+                boxShadow: decoTier >= 2 ? `0 0 ${6 + decoTier * 4}px ${streakColor.from}33` : undefined,
+              }}
             >
               <BlobChar shape={s.shape} color={s.color} mood={s.mood} size={48} bounce={false} />
               <div>
