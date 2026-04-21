@@ -592,6 +592,94 @@ const renderAnimal = (
     );
   }
 
+  // Penguin: hardcoded tuxedo black body
+  if (shape === "penguin") {
+    return (
+      <>
+        <SoftBody fill="hsl(220 25% 22%)" stroke="hsl(220 30% 12%)" />
+        <PenguinFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Axolotl: hardcoded soft pink
+  if (shape === "axolotl") {
+    return (
+      <>
+        <SoftBody fill="hsl(340 80% 86%)" stroke="hsl(340 40% 55%)" />
+        <AxolotlFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Dino: hardcoded soft green
+  if (shape === "dino") {
+    return (
+      <>
+        <SoftBody fill="hsl(140 45% 70%)" stroke="hsl(140 35% 35%)" />
+        <DinoFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Sheep: hardcoded cream/white wool
+  if (shape === "sheep") {
+    return (
+      <>
+        <SoftBody fill="hsl(30 25% 92%)" stroke="hsl(30 20% 50%)" />
+        <SheepFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Hamster, Dog, Owl, Otter accept color palette
+  if (shape === "hamster") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <HamsterFeatures fill={fill} deep={deep} />
+        <Eyes mood={mood} cy={48} />
+        <ellipse cx="50" cy="62" rx="1.6" ry="1.2" fill={INK} />
+        <Mouth mood={mood} cy={68} />
+      </>
+    );
+  }
+
+  if (shape === "dog") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <DogEars deep={deep} />
+        <Cheeks y={64} />
+        <Eyes mood={mood} cy={50} />
+        <ellipse cx="50" cy="64" rx="3" ry="2.2" fill={INK} />
+        <Mouth mood={mood} cy={72} />
+        {/* tongue tip for happy */}
+        {mood === "excited" && (
+          <ellipse cx="50" cy="74" rx="3" ry="2" fill="hsl(340 70% 60%)" stroke={INK} strokeWidth="1" />
+        )}
+      </>
+    );
+  }
+
+  if (shape === "owl") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <OwlFeatures mood={mood} fill={fill} deep={deep} />
+      </>
+    );
+  }
+
+  if (shape === "otter") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <OtterFeatures mood={mood} fill={fill} />
+      </>
+    );
+  }
+
   // Bunny / Bear / Cat / Fox use color palette
   return (
     <>
