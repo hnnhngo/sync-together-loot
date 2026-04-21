@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
+import { Flame, Gift, Coins, CheckCircle2, X, Sparkles, Trophy } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
+import QuestsPanel from "@/components/QuestsPanel";
 import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
 import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
+import { questsStore } from "@/lib/quests-store";
 
 const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
 const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
