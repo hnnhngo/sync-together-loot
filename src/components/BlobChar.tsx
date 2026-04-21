@@ -8,7 +8,15 @@ type BlobShape =
   | "cat"
   | "fox"
   | "chick"
-  | "panda";
+  | "panda"
+  | "penguin"
+  | "hamster"
+  | "axolotl"
+  | "dog"
+  | "owl"
+  | "sheep"
+  | "dino"
+  | "otter";
 type BlobColor = "pink" | "blue" | "mint" | "orange" | "yellow" | "lavender" | "coral" | "sage";
 type Mood = "happy" | "sleepy" | "excited" | "wink" | "sad";
 
