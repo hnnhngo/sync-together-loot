@@ -313,7 +313,7 @@ const LockerPage = () => {
         <div className="mx-6 mt-3 flex items-start gap-2 bg-muted/60 border border-border rounded-2xl px-3 py-2">
           <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-muted-foreground font-semibold">
-            <span className="capitalize">{cosmetics.shape}</span> has a fixed look — no color options for this animal. Switch to a Bunny, Bear, Cat or Fox to unlock color tints.
+            <span className="capitalize">{cosmetics.shape}</span> has a fixed look — no color options for this animal. Switch to a Bunny, Bear, Cat, Fox, Hamster, Pup, Otter or Owl to unlock color tints.
           </p>
         </div>
       )}
