@@ -1,11 +1,39 @@
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, Timer, Gift, Palette, ShoppingBag, Check } from "lucide-react";
+import { Coins, Timer, Gift, Palette, ShoppingBag, Check, PawPrint, Lock } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { HatKey, OutfitKey, GlassesKey, BlobShape, BlobColor } from "@/components/BlobChar";
 import { cosmeticsStore, useCosmetics, STREAK_COLORS, StreakColorKey } from "@/lib/cosmetics-store";
 import { coinsStore, useCoins } from "@/lib/coins-store";
 import { getRotatingVariants, AccessoryVariant } from "@/lib/accessory-variants";
+
+type AnimalRarity = "Common" | "Rare" | "Legendary";
+interface AnimalShopItem {
+  shape: BlobShape;
+  name: string;
+  description: string;
+  rarity: AnimalRarity;
+  cost: number;
+}
+
+/** Permanent animal shop — buy once, own forever. */
+const ANIMAL_SHOP: AnimalShopItem[] = [
+  { shape: "bunny",    name: "Bunny",    description: "Springy ears, classic cutie.",         rarity: "Common",    cost: 0   },
+  { shape: "bear",     name: "Bear",     description: "Cozy and round-eared.",                rarity: "Common",    cost: 0   },
+  { shape: "cat",      name: "Cat",      description: "Pointy ears + whiskers.",              rarity: "Common",    cost: 0   },
+  { shape: "fox",      name: "Fox",      description: "Sly snoot with a white face patch.",   rarity: "Rare",      cost: 200 },
+  { shape: "frog",     name: "Frog",     description: "Mint-green with bubble eyes.",         rarity: "Rare",      cost: 250 },
+  { shape: "chick",    name: "Chick",    description: "Baby-soft yellow with a tiny tuft.",   rarity: "Rare",      cost: 250 },
+  { shape: "hamster",  name: "Hamster",  description: "Puffy cheek pouches!",                 rarity: "Rare",      cost: 300 },
+  { shape: "dog",      name: "Pup",      description: "Floppy ears and a happy tongue.",      rarity: "Rare",      cost: 300 },
+  { shape: "otter",    name: "Otter",    description: "Lil' face mask + button nose.",        rarity: "Rare",      cost: 350 },
+  { shape: "sheep",    name: "Sheep",    description: "Cloud-fluff wool around the face.",    rarity: "Rare",      cost: 400 },
+  { shape: "owl",      name: "Owl",      description: "Big eye discs + feather tufts.",       rarity: "Legendary", cost: 600 },
+  { shape: "penguin",  name: "Penguin",  description: "Tuxedo body + tiny orange feet.",      rarity: "Legendary", cost: 700 },
+  { shape: "axolotl",  name: "Axolotl",  description: "Pink with feathery side gills.",       rarity: "Legendary", cost: 800 },
+  { shape: "dino",     name: "Lil Dino", description: "Tiny back spikes, mighty roar.",       rarity: "Legendary", cost: 900 },
+  { shape: "panda",    name: "Panda",    description: "Iconic black-and-white legend.",       rarity: "Legendary", cost: 1000 },
+];
 
 type Rarity = "Legendary" | "Rare" | "Common";
 const DUPE_COIN_VALUE: Record<Rarity, number> = { Common: 15, Rare: 40, Legendary: 100 };
