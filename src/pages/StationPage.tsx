@@ -244,7 +244,7 @@ const StationPage = () => {
         </button>
       </div>
 
-      {tab === "banners" ? (
+      {tab === "banners" && (
         <>
           {/* Banner selector tabs */}
           <div className="flex gap-2 px-6 mt-4 overflow-x-auto no-scrollbar">
@@ -318,8 +318,111 @@ const StationPage = () => {
             </div>
           )}
         </>
-      ) : (
-        /* Color Lab */
+      )}
+
+      {tab === "animals" && (
+        /* Permanent Animal Shop */
+        <div className="px-6 mt-4">
+          <div className="bg-gradient-to-br from-blob-mint/15 to-blob-yellow/15 rounded-3xl border border-border p-5 shadow-soft mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <PawPrint className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-bold text-foreground">Animal Shop</h2>
+            </div>
+            <p className="text-[11px] text-muted-foreground font-semibold mb-4">
+              Buy new animals — yours forever! Equip from the Locker once owned.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {ANIMAL_SHOP.map((a) => {
+                const owned = !!cosmetics.ownedShapes[a.shape];
+                const equipped = cosmetics.shape === a.shape;
+                const free = a.cost === 0;
+                const canAfford = points >= a.cost;
+                return (
+                  <div
+                    key={a.shape}
+                    className={`bg-card rounded-2xl p-3 border-2 ${
+                      equipped
+                        ? "border-primary"
+                        : owned
+                        ? "border-blob-mint/60"
+                        : "border-border"
+                    }`}
+                  >
+                    <div className="relative w-full h-20 rounded-xl bg-muted/40 flex items-center justify-center mb-2">
+                      <BlobChar
+                        shape={a.shape}
+                        color={cosmetics.color}
+                        mood="happy"
+                        size={64}
+                        bounce={false}
+                      />
+                      {!owned && !free && (
+                        <span className="absolute top-1 right-1 bg-card text-muted-foreground rounded-full p-1 border border-border">
+                          <Lock className="w-3 h-3" />
+                        </span>
+                      )}
+                      <span
+                        className={`absolute top-1 left-1 text-[8px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${rarityTextColor[a.rarity]} bg-card/80`}
+                      >
+                        {a.rarity}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-foreground text-center">{a.name}</p>
+                    <p className="text-[10px] text-muted-foreground text-center mb-2 leading-tight min-h-[26px]">
+                      {a.description}
+                    </p>
+                    {owned ? (
+                      <button
+                        onClick={() => cosmeticsStore.set({ shape: a.shape })}
+                        disabled={equipped}
+                        className={`w-full py-2 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
+                          equipped
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-primary text-primary-foreground shadow-pop"
+                        }`}
+                      >
+                        {equipped ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" /> Equipped
+                          </>
+                        ) : (
+                          "Equip"
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (free) {
+                            cosmeticsStore.addShape(a.shape);
+                            return;
+                          }
+                          if (coinsStore.spend(a.cost)) cosmeticsStore.addShape(a.shape);
+                        }}
+                        disabled={!free && !canAfford}
+                        className={`w-full py-2 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
+                          !free && !canAfford
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-primary text-primary-foreground shadow-pop"
+                        }`}
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        {free ? "Free" : (
+                          <>
+                            <Coins className="w-3 h-3" /> {a.cost}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "colorLab" && (
         <div className="px-6 mt-4">
           <div className="bg-gradient-to-br from-blob-lavender/20 to-blob-pink/10 rounded-3xl border border-border p-5 shadow-soft mb-4">
             <div className="flex items-center gap-2 mb-1">
