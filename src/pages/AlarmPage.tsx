@@ -330,7 +330,17 @@ const AlarmPage = () => {
   const [showCalendar, setShowCalendar] = useState(true);
 
   const toggleAlarm = (id: number) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)));
+    setAlarms((prev) =>
+      prev.map((a) => {
+        if (a.id !== id) return a;
+        const next = !a.enabled;
+        if (next) questsStore.bump("alarmsKept", 1);
+        return { ...a, enabled: next };
+      }),
+    );
+
+  const updateLabel = (id: number, label: string) =>
+    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, label } : a)));
 
   const updateTime = (id: number, h: number, m: number) =>
     setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, hour: h, minute: m } : a)));
