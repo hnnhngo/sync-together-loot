@@ -8,7 +8,15 @@ type BlobShape =
   | "cat"
   | "fox"
   | "chick"
-  | "panda";
+  | "panda"
+  | "penguin"
+  | "hamster"
+  | "axolotl"
+  | "dog"
+  | "owl"
+  | "sheep"
+  | "dino"
+  | "otter";
 type BlobColor = "pink" | "blue" | "mint" | "orange" | "yellow" | "lavender" | "coral" | "sage";
 type Mood = "happy" | "sleepy" | "excited" | "wink" | "sad";
 
@@ -215,6 +223,121 @@ const PandaPatches = () => (
   <g>
     <ellipse cx="38" cy="50" rx="9" ry="11" fill="hsl(240 25% 22%)" />
     <ellipse cx="62" cy="50" rx="9" ry="11" fill="hsl(240 25% 22%)" />
+  </g>
+);
+
+/* Penguin: tuxedo body + tiny wings + orange beak/feet */
+const PenguinFeatures = ({ mood }: { mood: Mood }) => (
+  <g>
+    <ellipse cx="50" cy="64" rx="22" ry="20" fill="white" stroke={INK} strokeWidth="1.4" opacity="0.95" />
+    <ellipse cx="14" cy="60" rx="6" ry="14" fill="hsl(220 25% 22%)" stroke={INK} strokeWidth="1.4" />
+    <ellipse cx="86" cy="60" rx="6" ry="14" fill="hsl(220 25% 22%)" stroke={INK} strokeWidth="1.4" />
+    <Cheeks y={62} />
+    <Eyes mood={mood} cy={48} />
+    <path d="M44,58 L56,58 L50,66 Z" fill="hsl(28 90% 55%)" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+    <ellipse cx="40" cy="92" rx="6" ry="3" fill="hsl(28 90% 55%)" stroke={INK} strokeWidth="1.2" />
+    <ellipse cx="60" cy="92" rx="6" ry="3" fill="hsl(28 90% 55%)" stroke={INK} strokeWidth="1.2" />
+  </g>
+);
+
+/* Hamster: small ears + puffy cheek pouches */
+const HamsterFeatures = ({ fill, deep }: { fill: string; deep: string }) => (
+  <g>
+    <circle cx="28" cy="20" r="6" fill={fill} stroke={INK} strokeWidth="1.4" />
+    <circle cx="72" cy="20" r="6" fill={fill} stroke={INK} strokeWidth="1.4" />
+    <circle cx="28" cy="21" r="2.5" fill={deep} />
+    <circle cx="72" cy="21" r="2.5" fill={deep} />
+    <ellipse cx="22" cy="64" rx="9" ry="8" fill={deep} stroke={INK} strokeWidth="1.2" opacity="0.7" />
+    <ellipse cx="78" cy="64" rx="9" ry="8" fill={deep} stroke={INK} strokeWidth="1.2" opacity="0.7" />
+  </g>
+);
+
+/* Axolotl: pink with feathery side gills */
+const AxolotlFeatures = ({ mood }: { mood: Mood }) => (
+  <g>
+    <g stroke={INK} strokeWidth="1.2" fill="hsl(340 80% 78%)" strokeLinejoin="round">
+      <path d="M14,40 Q4,32 6,46 Q-2,52 8,56 Q0,64 12,62 Z" />
+      <path d="M86,40 Q96,32 94,46 Q102,52 92,56 Q100,64 88,62 Z" />
+    </g>
+    <Cheeks y={64} />
+    <Eyes mood={mood} cy={48} />
+    <path d="M46,66 Q50,69 54,66" stroke={INK} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  </g>
+);
+
+/* Dog: floppy ears */
+const DogEars = ({ deep }: { deep: string }) => (
+  <g>
+    <ellipse cx="22" cy="32" rx="8" ry="14" fill={deep} stroke={INK} strokeWidth="1.4" transform="rotate(-15 22 32)" />
+    <ellipse cx="78" cy="32" rx="8" ry="14" fill={deep} stroke={INK} strokeWidth="1.4" transform="rotate(15 78 32)" />
+  </g>
+);
+
+/* Owl: feather tufts + big eye discs + beak */
+const OwlFeatures = ({ mood, fill, deep }: { mood: Mood; fill: string; deep: string }) => (
+  <g>
+    <path d="M22,12 L28,24 L18,24 Z" fill={fill} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M78,12 L82,24 L72,24 Z" fill={fill} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+    <circle cx="36" cy="48" r="14" fill="white" stroke={INK} strokeWidth="1.4" />
+    <circle cx="64" cy="48" r="14" fill="white" stroke={INK} strokeWidth="1.4" />
+    <circle cx="36" cy="48" r="6" fill={deep} opacity="0.4" />
+    <circle cx="64" cy="48" r="6" fill={deep} opacity="0.4" />
+    <Eyes mood={mood} cx1={36} cx2={64} cy={48} />
+    <path d="M46,62 L54,62 L50,70 Z" fill="hsl(38 80% 55%)" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+    <g stroke={INK} strokeWidth="0.8" fill="none" opacity="0.4">
+      <path d="M40,76 Q44,80 48,76" />
+      <path d="M52,76 Q56,80 60,76" />
+    </g>
+  </g>
+);
+
+/* Sheep: fluffy wool puffs around face panel */
+const SheepFeatures = ({ mood }: { mood: Mood }) => (
+  <g>
+    <g fill="hsl(0 0% 98%)" stroke={INK} strokeWidth="1.4">
+      <circle cx="20" cy="30" r="9" />
+      <circle cx="32" cy="14" r="9" />
+      <circle cx="50" cy="8" r="10" />
+      <circle cx="68" cy="14" r="9" />
+      <circle cx="80" cy="30" r="9" />
+    </g>
+    <ellipse cx="50" cy="58" rx="22" ry="18" fill="hsl(30 25% 88%)" stroke={INK} strokeWidth="1.4" />
+    <ellipse cx="26" cy="44" rx="5" ry="3" fill="hsl(30 25% 75%)" stroke={INK} strokeWidth="1.2" transform="rotate(-25 26 44)" />
+    <ellipse cx="74" cy="44" rx="5" ry="3" fill="hsl(30 25% 75%)" stroke={INK} strokeWidth="1.2" transform="rotate(25 74 44)" />
+    <Cheeks y={64} />
+    <Eyes mood={mood} cy={54} />
+    <ellipse cx="50" cy="66" rx="2" ry="1.5" fill={INK} />
+    <Mouth mood={mood} cy={72} />
+  </g>
+);
+
+/* Dino: small back spikes */
+const DinoFeatures = ({ mood }: { mood: Mood }) => (
+  <g>
+    <g fill="hsl(140 50% 45%)" stroke={INK} strokeWidth="1.2" strokeLinejoin="round">
+      <path d="M30,18 L34,8 L38,18 Z" />
+      <path d="M42,12 L46,2 L50,12 Z" />
+      <path d="M54,12 L58,2 L62,12 Z" />
+      <path d="M66,18 L70,8 L74,18 Z" />
+    </g>
+    <Cheeks y={64} />
+    <Eyes mood={mood} cy={48} />
+    <circle cx="46" cy="64" r="1" fill={INK} />
+    <circle cx="54" cy="64" r="1" fill={INK} />
+    <Mouth mood={mood} cy={70} />
+  </g>
+);
+
+/* Otter: small ears + lighter face patch + round nose */
+const OtterFeatures = ({ mood, fill }: { mood: Mood; fill: string }) => (
+  <g>
+    <circle cx="26" cy="22" r="5" fill={fill} stroke={INK} strokeWidth="1.4" />
+    <circle cx="74" cy="22" r="5" fill={fill} stroke={INK} strokeWidth="1.4" />
+    <ellipse cx="50" cy="60" rx="22" ry="16" fill="hsl(30 30% 88%)" opacity="0.7" />
+    <Cheeks y={66} />
+    <Eyes mood={mood} cy={50} />
+    <ellipse cx="50" cy="64" rx="3.5" ry="2.5" fill={INK} />
+    <Mouth mood={mood} cy={72} />
   </g>
 );
 
@@ -465,6 +588,94 @@ const renderAnimal = (
         <Eyes mood={mood} cy={50} />
         <ellipse cx="50" cy="62" rx="2" ry="1.4" fill={INK} />
         <Mouth mood={mood} cy={70} />
+      </>
+    );
+  }
+
+  // Penguin: hardcoded tuxedo black body
+  if (shape === "penguin") {
+    return (
+      <>
+        <SoftBody fill="hsl(220 25% 22%)" stroke="hsl(220 30% 12%)" />
+        <PenguinFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Axolotl: hardcoded soft pink
+  if (shape === "axolotl") {
+    return (
+      <>
+        <SoftBody fill="hsl(340 80% 86%)" stroke="hsl(340 40% 55%)" />
+        <AxolotlFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Dino: hardcoded soft green
+  if (shape === "dino") {
+    return (
+      <>
+        <SoftBody fill="hsl(140 45% 70%)" stroke="hsl(140 35% 35%)" />
+        <DinoFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Sheep: hardcoded cream/white wool
+  if (shape === "sheep") {
+    return (
+      <>
+        <SoftBody fill="hsl(30 25% 92%)" stroke="hsl(30 20% 50%)" />
+        <SheepFeatures mood={mood} />
+      </>
+    );
+  }
+
+  // Hamster, Dog, Owl, Otter accept color palette
+  if (shape === "hamster") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <HamsterFeatures fill={fill} deep={deep} />
+        <Eyes mood={mood} cy={48} />
+        <ellipse cx="50" cy="62" rx="1.6" ry="1.2" fill={INK} />
+        <Mouth mood={mood} cy={68} />
+      </>
+    );
+  }
+
+  if (shape === "dog") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <DogEars deep={deep} />
+        <Cheeks y={64} />
+        <Eyes mood={mood} cy={50} />
+        <ellipse cx="50" cy="64" rx="3" ry="2.2" fill={INK} />
+        <Mouth mood={mood} cy={72} />
+        {/* tongue tip for happy */}
+        {mood === "excited" && (
+          <ellipse cx="50" cy="74" rx="3" ry="2" fill="hsl(340 70% 60%)" stroke={INK} strokeWidth="1" />
+        )}
+      </>
+    );
+  }
+
+  if (shape === "owl") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <OwlFeatures mood={mood} fill={fill} deep={deep} />
+      </>
+    );
+  }
+
+  if (shape === "otter") {
+    return (
+      <>
+        <SoftBody fill={fill} stroke={stroke} />
+        <OtterFeatures mood={mood} fill={fill} />
       </>
     );
   }

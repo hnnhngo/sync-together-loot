@@ -1,11 +1,39 @@
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Coins, Timer, Gift, Palette, ShoppingBag, Check } from "lucide-react";
+import { Coins, Timer, Gift, Palette, ShoppingBag, Check, PawPrint, Lock } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { HatKey, OutfitKey, GlassesKey, BlobShape, BlobColor } from "@/components/BlobChar";
 import { cosmeticsStore, useCosmetics, STREAK_COLORS, StreakColorKey } from "@/lib/cosmetics-store";
 import { coinsStore, useCoins } from "@/lib/coins-store";
 import { getRotatingVariants, AccessoryVariant } from "@/lib/accessory-variants";
+
+type AnimalRarity = "Common" | "Rare" | "Legendary";
+interface AnimalShopItem {
+  shape: BlobShape;
+  name: string;
+  description: string;
+  rarity: AnimalRarity;
+  cost: number;
+}
+
+/** Permanent animal shop — buy once, own forever. */
+const ANIMAL_SHOP: AnimalShopItem[] = [
+  { shape: "bunny",    name: "Bunny",    description: "Springy ears, classic cutie.",         rarity: "Common",    cost: 0   },
+  { shape: "bear",     name: "Bear",     description: "Cozy and round-eared.",                rarity: "Common",    cost: 0   },
+  { shape: "cat",      name: "Cat",      description: "Pointy ears + whiskers.",              rarity: "Common",    cost: 0   },
+  { shape: "fox",      name: "Fox",      description: "Sly snoot with a white face patch.",   rarity: "Rare",      cost: 200 },
+  { shape: "frog",     name: "Frog",     description: "Mint-green with bubble eyes.",         rarity: "Rare",      cost: 250 },
+  { shape: "chick",    name: "Chick",    description: "Baby-soft yellow with a tiny tuft.",   rarity: "Rare",      cost: 250 },
+  { shape: "hamster",  name: "Hamster",  description: "Puffy cheek pouches!",                 rarity: "Rare",      cost: 300 },
+  { shape: "dog",      name: "Pup",      description: "Floppy ears and a happy tongue.",      rarity: "Rare",      cost: 300 },
+  { shape: "otter",    name: "Otter",    description: "Lil' face mask + button nose.",        rarity: "Rare",      cost: 350 },
+  { shape: "sheep",    name: "Sheep",    description: "Cloud-fluff wool around the face.",    rarity: "Rare",      cost: 400 },
+  { shape: "owl",      name: "Owl",      description: "Big eye discs + feather tufts.",       rarity: "Legendary", cost: 600 },
+  { shape: "penguin",  name: "Penguin",  description: "Tuxedo body + tiny orange feet.",      rarity: "Legendary", cost: 700 },
+  { shape: "axolotl",  name: "Axolotl",  description: "Pink with feathery side gills.",       rarity: "Legendary", cost: 800 },
+  { shape: "dino",     name: "Lil Dino", description: "Tiny back spikes, mighty roar.",       rarity: "Legendary", cost: 900 },
+  { shape: "panda",    name: "Panda",    description: "Iconic black-and-white legend.",       rarity: "Legendary", cost: 1000 },
+];
 
 type Rarity = "Legendary" | "Rare" | "Common";
 const DUPE_COIN_VALUE: Record<Rarity, number> = { Common: 15, Rare: 40, Legendary: 100 };
@@ -130,7 +158,7 @@ const StationPage = () => {
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [dupeCoins, setDupeCoins] = useState(0);
   const [history, setHistory] = useState<GachaItem[]>([]);
-  const [tab, setTab] = useState<"banners" | "colorLab">("banners");
+  const [tab, setTab] = useState<"banners" | "animals" | "colorLab">("banners");
 
   // Rotating color lab items (seed changes daily)
   const daySeed = useMemo(() => Math.floor(Date.now() / 86400000), []);
@@ -203,17 +231,20 @@ const StationPage = () => {
         <MascotBubble message="Pull from banners for accessories! Duplicates give coins back 💰 Visit the Color Lab for alt skins!" />
       </div>
 
-      {/* Tab: Banners vs Color Lab */}
+      {/* Tabs: Banners / Animals / Color Lab */}
       <div className="flex gap-2 px-6 mt-4">
-        <button onClick={() => setTab("banners")} className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-colors ${tab === "banners" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
+        <button onClick={() => setTab("banners")} className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-colors ${tab === "banners" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
           <Gift className="w-4 h-4 inline mr-1" /> Banners
         </button>
-        <button onClick={() => setTab("colorLab")} className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-colors ${tab === "colorLab" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
+        <button onClick={() => setTab("animals")} className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-colors ${tab === "animals" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
+          <PawPrint className="w-4 h-4 inline mr-1" /> Animals
+        </button>
+        <button onClick={() => setTab("colorLab")} className={`flex-1 py-2.5 rounded-full text-xs font-bold transition-colors ${tab === "colorLab" ? "bg-primary text-primary-foreground shadow-soft" : "bg-card border border-border text-muted-foreground"}`}>
           <Palette className="w-4 h-4 inline mr-1" /> Color Lab
         </button>
       </div>
 
-      {tab === "banners" ? (
+      {tab === "banners" && (
         <>
           {/* Banner selector tabs */}
           <div className="flex gap-2 px-6 mt-4 overflow-x-auto no-scrollbar">
@@ -287,8 +318,111 @@ const StationPage = () => {
             </div>
           )}
         </>
-      ) : (
-        /* Color Lab */
+      )}
+
+      {tab === "animals" && (
+        /* Permanent Animal Shop */
+        <div className="px-6 mt-4">
+          <div className="bg-gradient-to-br from-blob-mint/15 to-blob-yellow/15 rounded-3xl border border-border p-5 shadow-soft mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <PawPrint className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-bold text-foreground">Animal Shop</h2>
+            </div>
+            <p className="text-[11px] text-muted-foreground font-semibold mb-4">
+              Buy new animals — yours forever! Equip from the Locker once owned.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {ANIMAL_SHOP.map((a) => {
+                const owned = !!cosmetics.ownedShapes[a.shape];
+                const equipped = cosmetics.shape === a.shape;
+                const free = a.cost === 0;
+                const canAfford = points >= a.cost;
+                return (
+                  <div
+                    key={a.shape}
+                    className={`bg-card rounded-2xl p-3 border-2 ${
+                      equipped
+                        ? "border-primary"
+                        : owned
+                        ? "border-blob-mint/60"
+                        : "border-border"
+                    }`}
+                  >
+                    <div className="relative w-full h-20 rounded-xl bg-muted/40 flex items-center justify-center mb-2">
+                      <BlobChar
+                        shape={a.shape}
+                        color={cosmetics.color}
+                        mood="happy"
+                        size={64}
+                        bounce={false}
+                      />
+                      {!owned && !free && (
+                        <span className="absolute top-1 right-1 bg-card text-muted-foreground rounded-full p-1 border border-border">
+                          <Lock className="w-3 h-3" />
+                        </span>
+                      )}
+                      <span
+                        className={`absolute top-1 left-1 text-[8px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${rarityTextColor[a.rarity]} bg-card/80`}
+                      >
+                        {a.rarity}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-foreground text-center">{a.name}</p>
+                    <p className="text-[10px] text-muted-foreground text-center mb-2 leading-tight min-h-[26px]">
+                      {a.description}
+                    </p>
+                    {owned ? (
+                      <button
+                        onClick={() => cosmeticsStore.set({ shape: a.shape })}
+                        disabled={equipped}
+                        className={`w-full py-2 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
+                          equipped
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-primary text-primary-foreground shadow-pop"
+                        }`}
+                      >
+                        {equipped ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" /> Equipped
+                          </>
+                        ) : (
+                          "Equip"
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (free) {
+                            cosmeticsStore.addShape(a.shape);
+                            return;
+                          }
+                          if (coinsStore.spend(a.cost)) cosmeticsStore.addShape(a.shape);
+                        }}
+                        disabled={!free && !canAfford}
+                        className={`w-full py-2 rounded-full text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
+                          !free && !canAfford
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-primary text-primary-foreground shadow-pop"
+                        }`}
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        {free ? "Free" : (
+                          <>
+                            <Coins className="w-3 h-3" /> {a.cost}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "colorLab" && (
         <div className="px-6 mt-4">
           <div className="bg-gradient-to-br from-blob-lavender/20 to-blob-pink/10 rounded-3xl border border-border p-5 shadow-soft mb-4">
             <div className="flex items-center gap-2 mb-1">

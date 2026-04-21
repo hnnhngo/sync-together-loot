@@ -29,10 +29,18 @@ const inventory: CosmeticItem[] = [
   { id: 11, name: "Bunny",          type: "shape", rarity: "Common",    shape: "bunny" },
   { id: 12, name: "Bear",           type: "shape", rarity: "Common",    shape: "bear" },
   { id: 13, name: "Cat",            type: "shape", rarity: "Common",    shape: "cat" },
-  { id: 14, name: "Frog",           type: "shape", rarity: "Rare",     shape: "frog" },
-  { id: 15, name: "Fox",            type: "shape", rarity: "Rare",     shape: "fox" },
-  { id: 16, name: "Chick",          type: "shape", rarity: "Rare",     shape: "chick" },
-  { id: 17, name: "Panda",          type: "shape", rarity: "Legendary", shape: "panda" },
+  { id: 14, name: "Frog",           type: "shape", rarity: "Rare",      shape: "frog" },
+  { id: 15, name: "Fox",            type: "shape", rarity: "Rare",      shape: "fox" },
+  { id: 16, name: "Chick",          type: "shape", rarity: "Rare",      shape: "chick" },
+  { id: 17, name: "Hamster",        type: "shape", rarity: "Rare",      shape: "hamster" },
+  { id: 18, name: "Pup",            type: "shape", rarity: "Rare",      shape: "dog" },
+  { id: 19, name: "Otter",          type: "shape", rarity: "Rare",      shape: "otter" },
+  { id: 70, name: "Sheep",          type: "shape", rarity: "Rare",      shape: "sheep" },
+  { id: 71, name: "Owl",            type: "shape", rarity: "Legendary", shape: "owl" },
+  { id: 72, name: "Penguin",        type: "shape", rarity: "Legendary", shape: "penguin" },
+  { id: 73, name: "Axolotl",        type: "shape", rarity: "Legendary", shape: "axolotl" },
+  { id: 74, name: "Lil Dino",       type: "shape", rarity: "Legendary", shape: "dino" },
+  { id: 75, name: "Panda",          type: "shape", rarity: "Legendary", shape: "panda" },
 
   // Colors
   { id: 20, name: "Sky Blue",   type: "color", rarity: "Common",    color: "blue" },
@@ -117,11 +125,12 @@ const LockerPage = () => {
   };
 
   const isOwned = (item: CosmeticItem): boolean => {
+    if (item.type === "shape")       return !!cosmetics.ownedShapes[item.shape!];
     if (item.type === "hat")         return (cosmetics.ownedHats[item.hat!] ?? 0) > 0;
     if (item.type === "outfit")      return (cosmetics.ownedOutfits[item.outfit!] ?? 0) > 0;
     if (item.type === "glasses")     return (cosmetics.ownedGlasses[item.glasses!] ?? 0) > 0;
     if (item.type === "streakColor") return (cosmetics.ownedStreaks[item.streakColor!] ?? 0) > 0;
-    return true; // animals + colors are always available in this prototype
+    return true; // colors are always available
   };
 
   const toggleEquip = (item: CosmeticItem) => {
@@ -304,7 +313,7 @@ const LockerPage = () => {
         <div className="mx-6 mt-3 flex items-start gap-2 bg-muted/60 border border-border rounded-2xl px-3 py-2">
           <Info className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-muted-foreground font-semibold">
-            <span className="capitalize">{cosmetics.shape}</span> has a fixed look — no color options for this animal. Switch to a Bunny, Bear, Cat or Fox to unlock color tints.
+            <span className="capitalize">{cosmetics.shape}</span> has a fixed look — no color options for this animal. Switch to a Bunny, Bear, Cat, Fox, Hamster, Pup, Otter or Owl to unlock color tints.
           </p>
         </div>
       )}
