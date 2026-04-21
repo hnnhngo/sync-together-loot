@@ -125,11 +125,12 @@ const LockerPage = () => {
   };
 
   const isOwned = (item: CosmeticItem): boolean => {
+    if (item.type === "shape")       return !!cosmetics.ownedShapes[item.shape!];
     if (item.type === "hat")         return (cosmetics.ownedHats[item.hat!] ?? 0) > 0;
     if (item.type === "outfit")      return (cosmetics.ownedOutfits[item.outfit!] ?? 0) > 0;
     if (item.type === "glasses")     return (cosmetics.ownedGlasses[item.glasses!] ?? 0) > 0;
     if (item.type === "streakColor") return (cosmetics.ownedStreaks[item.streakColor!] ?? 0) > 0;
-    return true; // animals + colors are always available in this prototype
+    return true; // colors are always available
   };
 
   const toggleEquip = (item: CosmeticItem) => {
