@@ -442,21 +442,13 @@ const AlarmPage = () => {
                       <Users className="w-3 h-3" /> {alarm.syncWith}
                     </span>
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleAlarm(alarm.id);
-                    }}
-                    className={`w-11 h-6 rounded-full transition-colors relative ${
-                      alarm.enabled ? "bg-primary" : "bg-muted"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform ${
-                        alarm.enabled ? "translate-x-5" : "translate-x-0.5"
-                      }`}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      checked={alarm.enabled}
+                      onCheckedChange={() => toggleAlarm(alarm.id)}
+                      aria-label={`${alarm.label} enabled`}
                     />
-                  </button>
+                  </div>
                 </div>
               </div>
 
