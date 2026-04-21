@@ -50,6 +50,8 @@ export interface CosmeticsState {
   ownedOutfits: Partial<Record<OutfitKey, number>>;
   ownedGlasses: Partial<Record<GlassesKey, number>>;
   ownedStreaks: Partial<Record<StreakColorKey, number>>;
+  /** Animals the user owns. Locked animals must be purchased in the Station. */
+  ownedShapes: Partial<Record<BlobShape, true>>;
   /** Owned alternate color variants per hat/outfit/glasses. */
   ownedVariants: Record<string, true>;
   /** Currently equipped variant id per slot (or undefined for default). */
@@ -69,6 +71,8 @@ const initial: CosmeticsState = {
   ownedOutfits: { scarf: 1, cape: 1, bowtie: 1 },
   ownedGlasses: { round: 1, shades: 1 },
   ownedStreaks: { ember: 1, rose: 1 },
+  // Default starter animals — the rest are unlocked via the Station Animal Shop.
+  ownedShapes: { capybara: true, bunny: true, bear: true, cat: true },
   ownedVariants: {},
 };
 
