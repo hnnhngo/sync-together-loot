@@ -146,6 +146,13 @@ export const cosmeticsStore = {
     state = { ...state, ownedVariants: { ...state.ownedVariants, [variantId]: true } };
     emit();
   },
+  /** Mark an animal shape as owned. Returns true if newly added. */
+  addShape: (shape: BlobShape): boolean => {
+    if (state.ownedShapes[shape]) return false;
+    state = { ...state, ownedShapes: { ...state.ownedShapes, [shape]: true } };
+    emit();
+    return true;
+  },
   subscribe: (l: () => void) => {
     listeners.add(l);
     return () => listeners.delete(l);
