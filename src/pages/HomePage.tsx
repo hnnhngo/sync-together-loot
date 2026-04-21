@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Gift, Coins, CheckCircle2, X, Sparkles, Trophy } from "lucide-react";
+import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
 import QuestsPanel from "@/components/QuestsPanel";
