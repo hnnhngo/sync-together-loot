@@ -462,6 +462,24 @@ const AlarmPage = () => {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+                      {/* Editable label */}
+                      <div>
+                        <label
+                          htmlFor={`alarm-label-${alarm.id}`}
+                          className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1"
+                        >
+                          <Pencil className="w-3 h-3" /> Alarm name
+                        </label>
+                        <Input
+                          id={`alarm-label-${alarm.id}`}
+                          value={alarm.label}
+                          maxLength={40}
+                          onChange={(e) => updateLabel(alarm.id, e.target.value)}
+                          placeholder="e.g. Math Exam Prep"
+                          className="rounded-2xl"
+                        />
+                      </div>
+
                       {/* Draggable clock dial */}
                       <TimeDial
                         hour={alarm.hour}
