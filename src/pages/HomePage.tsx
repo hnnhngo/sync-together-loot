@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
+import QuestsPanel from "@/components/QuestsPanel";
 import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
 import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
+import { questsStore } from "@/lib/quests-store";
 
 const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
 const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
@@ -35,6 +37,11 @@ const HomePage = () => {
   const hatVariant = findVariant(cosmetics.equippedHatVariant);
   const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
   const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
+
+  // Keep the quests system aware of the current streak length.
+  useEffect(() => {
+    questsStore.setStreak(streak);
+  }, [streak]);
 
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
@@ -220,6 +227,32 @@ const HomePage = () => {
           <span className={`text-xs font-bold ${streakColor.flameClass}`}>· {tierLabel}</span>
         </motion.div>
 
+        {/* Progress to next decorative tier — always visible, streak-tinted */}
+        {(() => {
+          const tierEdges = [0, 3, 7, 14, 30];
+          const curEdge = tierEdges[decoTier];
+          const nextEdge = tierEdges[Math.min(decoTier + 1, tierEdges.length - 1)];
+          const span = Math.max(1, nextEdge - curEdge);
+          const pct = decoTier >= 4 ? 100 : Math.min(100, ((streak - curEdge) / span) * 100);
+          return (
+            <div className="mt-3 mx-auto w-56">
+              <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground mb-1">
+                <span>Tier {decoTier}</span>
+                <span>{decoTier >= 4 ? "MAX" : `${streak}/${nextEdge}d → Tier ${decoTier + 1}`}</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  initial={false}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                  style={{ background: `linear-gradient(90deg, ${streakColor.from}, ${streakColor.to})` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
+
         {decoTier >= 4 && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
@@ -327,11 +360,22 @@ const HomePage = () => {
         )}
       </AnimatePresence>
 
-      {/* Quick Stats - playful character cards */}
+      {/* Quests */}
+      <div className="px-6 mt-6">
+        <QuestsPanel fromColor={streakColor.from} toColor={streakColor.to} />
+      </div>
+
+      {/* Quick Stats - playful character cards with streak-tinted borders */}
       <div className="px-6 mt-6 pb-32">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-primary" />
+          <Sparkles className="w-4 h-4" style={{ color: streakColor.from }} />
           <h2 className="text-base font-bold text-foreground">Today's vibes</h2>
+          <span
+            className="ml-auto text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full text-white"
+            style={{ background: `linear-gradient(90deg, ${streakColor.from}, ${streakColor.to})` }}
+          >
+            {streakColor.name}
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
@@ -343,7 +387,11 @@ const HomePage = () => {
             <motion.div
               key={s.label}
               whileTap={{ scale: 0.97 }}
-              className={`${s.bg} rounded-3xl p-4 border border-border flex items-center gap-3`}
+              className={`${s.bg} rounded-3xl p-4 border-2 flex items-center gap-3 transition-shadow`}
+              style={{
+                borderColor: decoTier >= 1 ? `${streakColor.from}66` : "hsl(var(--border))",
+                boxShadow: decoTier >= 2 ? `0 0 ${6 + decoTier * 4}px ${streakColor.from}33` : undefined,
+              }}
             >
               <BlobChar shape={s.shape} color={s.color} mood={s.mood} size={48} bounce={false} />
               <div>

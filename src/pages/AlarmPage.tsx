@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp } from "lucide-react";
+import { AlarmClock, Plus, Trash2, Users, Bell, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import MascotBubble from "@/components/MascotBubble";
+import { questsStore } from "@/lib/quests-store";
 
 type DayId = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
@@ -328,7 +330,17 @@ const AlarmPage = () => {
   const [showCalendar, setShowCalendar] = useState(true);
 
   const toggleAlarm = (id: number) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)));
+    setAlarms((prev) =>
+      prev.map((a) => {
+        if (a.id !== id) return a;
+        const next = !a.enabled;
+        if (next) questsStore.bump("alarmsKept", 1);
+        return { ...a, enabled: next };
+      }),
+    );
+
+  const updateLabel = (id: number, label: string) =>
+    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, label } : a)));
 
   const updateTime = (id: number, h: number, m: number) =>
     setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, hour: h, minute: m } : a)));
@@ -430,21 +442,13 @@ const AlarmPage = () => {
                       <Users className="w-3 h-3" /> {alarm.syncWith}
                     </span>
                   )}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleAlarm(alarm.id);
-                    }}
-                    className={`w-11 h-6 rounded-full transition-colors relative ${
-                      alarm.enabled ? "bg-primary" : "bg-muted"
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform ${
-                        alarm.enabled ? "translate-x-5" : "translate-x-0.5"
-                      }`}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      checked={alarm.enabled}
+                      onCheckedChange={() => toggleAlarm(alarm.id)}
+                      aria-label={`${alarm.label} enabled`}
                     />
-                  </button>
+                  </div>
                 </div>
               </div>
 
@@ -458,6 +462,24 @@ const AlarmPage = () => {
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+                      {/* Editable label */}
+                      <div>
+                        <label
+                          htmlFor={`alarm-label-${alarm.id}`}
+                          className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1"
+                        >
+                          <Pencil className="w-3 h-3" /> Alarm name
+                        </label>
+                        <Input
+                          id={`alarm-label-${alarm.id}`}
+                          value={alarm.label}
+                          maxLength={40}
+                          onChange={(e) => updateLabel(alarm.id, e.target.value)}
+                          placeholder="e.g. Math Exam Prep"
+                          className="rounded-2xl"
+                        />
+                      </div>
+
                       {/* Draggable clock dial */}
                       <TimeDial
                         hour={alarm.hour}
