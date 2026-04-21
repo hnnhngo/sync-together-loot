@@ -227,6 +227,32 @@ const HomePage = () => {
           <span className={`text-xs font-bold ${streakColor.flameClass}`}>· {tierLabel}</span>
         </motion.div>
 
+        {/* Progress to next decorative tier — always visible, streak-tinted */}
+        {(() => {
+          const tierEdges = [0, 3, 7, 14, 30];
+          const curEdge = tierEdges[decoTier];
+          const nextEdge = tierEdges[Math.min(decoTier + 1, tierEdges.length - 1)];
+          const span = Math.max(1, nextEdge - curEdge);
+          const pct = decoTier >= 4 ? 100 : Math.min(100, ((streak - curEdge) / span) * 100);
+          return (
+            <div className="mt-3 mx-auto w-56">
+              <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground mb-1">
+                <span>Tier {decoTier}</span>
+                <span>{decoTier >= 4 ? "MAX" : `${streak}/${nextEdge}d → Tier ${decoTier + 1}`}</span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  initial={false}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ type: "spring", stiffness: 120, damping: 22 }}
+                  style={{ background: `linear-gradient(90deg, ${streakColor.from}, ${streakColor.to})` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
+
         {decoTier >= 4 && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
