@@ -26,7 +26,16 @@ export const STREAK_COLORS: Record<StreakColorKey, StreakColor> = {
 };
 
 /** Animal shapes that ignore the `color` prop (their look is hardcoded). */
-export const FIXED_COLOR_SHAPES: BlobShape[] = ["capybara", "frog", "chick", "panda"];
+export const FIXED_COLOR_SHAPES: BlobShape[] = [
+  "capybara",
+  "frog",
+  "chick",
+  "panda",
+  "penguin",
+  "axolotl",
+  "dino",
+  "sheep",
+];
 export const shapeHasColorVariants = (shape: BlobShape) => !FIXED_COLOR_SHAPES.includes(shape);
 
 export interface CosmeticsState {
