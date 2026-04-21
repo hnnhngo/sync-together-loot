@@ -38,6 +38,11 @@ const HomePage = () => {
   const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
   const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
 
+  // Keep the quests system aware of the current streak length.
+  useEffect(() => {
+    questsStore.setStreak(streak);
+  }, [streak]);
+
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
     if (reward) {
