@@ -28,7 +28,13 @@ const HomePage = () => {
   const { points } = useCoins();
   const [streak, setStreak] = useState(3);
   const [showDailyLogin, setShowDailyLogin] = useState(true);
-  const [claimedToday, setClaimedToday] = useState(false);
+  // Daily login claim is persisted per calendar day so it can only be claimed once per day.
+  const DAILY_CLAIM_KEY = "syn.dailyLogin.claimedOn";
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const [claimedToday, setClaimedToday] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(DAILY_CLAIM_KEY) === todayStr;
+  });
   const [tapCount, setTapCount] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
 
