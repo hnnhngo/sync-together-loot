@@ -25,7 +25,7 @@ interface CosmeticItem {
 
 const inventory: CosmeticItem[] = [
   // Animals
-  { id: 10, name: "Capybara (Syn)", type: "shape", rarity: "Legendary", shape: "capybara" },
+  { id: 10, name: "Syn",            type: "shape", rarity: "Legendary", shape: "capybara" },
   { id: 11, name: "Bunny",          type: "shape", rarity: "Common",    shape: "bunny" },
   { id: 12, name: "Bear",           type: "shape", rarity: "Common",    shape: "bear" },
   { id: 13, name: "Cat",            type: "shape", rarity: "Common",    shape: "cat" },
