@@ -68,10 +68,14 @@ const HomePage = () => {
   };
 
   const handleClaim = () => {
-    const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
+    if (claimedToday) return;
+    const reward = dailyRewards.find((r) => !r.claimed);
     if (reward) {
       coinsStore.add(reward.coins);
       setClaimedToday(true);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(DAILY_CLAIM_KEY, todayStr);
+      }
       setStreak((s) => s + 1);
     }
   };
