@@ -209,7 +209,10 @@ for (const q of QUESTS) {
 }
 
 const listeners = new Set<() => void>();
-const emit = () => listeners.forEach((l) => l());
+const emit = () => {
+  persistProgress(state.progress);
+  listeners.forEach((l) => l());
+};
 
 const recomputeProgress = () => {
   const today = todayKey();
