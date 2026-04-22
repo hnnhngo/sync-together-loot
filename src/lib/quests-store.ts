@@ -137,6 +137,8 @@ export const QUESTS: Quest[] = [
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
+const STORAGE_KEY = "syn.quests.progress.v1";
+
 const buildInitialProgress = (): Record<string, QuestProgressEntry> => {
   const today = todayKey();
   const out: Record<string, QuestProgressEntry> = {};
@@ -146,19 +148,64 @@ const buildInitialProgress = (): Record<string, QuestProgressEntry> => {
   return out;
 };
 
+/**
+ * Load persisted progress from localStorage and merge with defaults.
+ * Daily quests whose `resetOn` is not today have their `claimed` flag reset.
+ * Permanent quests keep their claimed state forever.
+ */
+const loadPersistedProgress = (): Record<string, QuestProgressEntry> => {
+  const base = buildInitialProgress();
+  if (typeof window === "undefined") return base;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return base;
+    const saved = JSON.parse(raw) as Record<string, QuestProgressEntry>;
+    const today = todayKey();
+    for (const q of QUESTS) {
+      const s = saved[q.id];
+      if (!s) continue;
+      if (q.kind === "daily") {
+        if (s.resetOn === today) {
+          base[q.id] = { ...s, resetOn: today };
+        } else {
+          // new day — reset claimed/progress for daily quests
+          base[q.id] = { progress: 0, claimed: false, resetOn: today };
+        }
+      } else {
+        // permanent quests retain claimed state
+        base[q.id] = { progress: s.progress ?? 0, claimed: !!s.claimed };
+      }
+    }
+  } catch {
+    // ignore corrupt storage
+  }
+  return base;
+};
+
+const persistProgress = (progress: Record<string, QuestProgressEntry>) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  } catch {
+    // ignore quota / privacy errors
+  }
+};
+
 let state: QuestsState = {
   studyHours: 1.5,
   assignments: 1,
   alarmsKept: 0,
   nudgesSent: 1,
   streakDays: 3,
-  progress: buildInitialProgress(),
+  progress: loadPersistedProgress(),
 };
 
 // seed initial progress to match the live counters above so the demo feels alive
+// (but DO NOT overwrite a persisted `claimed` flag — claims are once-per-day)
 for (const q of QUESTS) {
   const cur = state[q.metric];
-  state.progress[q.id].progress = Math.min(cur, q.goal);
+  const prev = state.progress[q.id];
+  state.progress[q.id] = { ...prev, progress: Math.min(cur, q.goal) };
 }
 
 const listeners = new Set<() => void>();
