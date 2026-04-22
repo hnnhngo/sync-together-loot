@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Crown, Star, Sparkles, Palette, Check, Flame, RotateCcw, Lock, Info } from "lucide-react";
+import { Crown, Star, Sparkles, Palette, Check, Flame, RotateCcw, Lock, Info, HelpCircle } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { BlobShape, BlobColor, Mood, HatKey, OutfitKey, GlassesKey } from "@/components/BlobChar";
+import Tutorial from "@/components/Tutorial";
 import {
   cosmeticsStore, useCosmetics, STREAK_COLORS, StreakColorKey, shapeHasColorVariants,
 } from "@/lib/cosmetics-store";
@@ -106,6 +107,7 @@ const LockerPage = () => {
   const cosmetics = useCosmetics();
   const [filter, setFilter] = useState<"all" | CosmeticType>("all");
   const [previewMood, setPreviewMood] = useState<Mood>("happy");
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const colorEnabled = shapeHasColorVariants(cosmetics.shape);
 
