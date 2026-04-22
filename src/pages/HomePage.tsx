@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
+import { Flame, Gift, Coins, CheckCircle2, X, Sparkles, HelpCircle } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
 import QuestsPanel from "@/components/QuestsPanel";
-import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
+import Tutorial from "@/components/Tutorial";
+import { cosmeticsStore, useCosmetics, STREAK_COLORS, pickDailyStreakColor } from "@/lib/cosmetics-store";
 import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
 import { questsStore } from "@/lib/quests-store";
@@ -29,11 +30,15 @@ const HomePage = () => {
   const [showDailyLogin, setShowDailyLogin] = useState(true);
   const [claimedToday, setClaimedToday] = useState(false);
   const [tapCount, setTapCount] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const tier = Math.min(Math.floor(streak / 2), tierLabels.length - 1);
   const tierLabel = tierLabels[tier];
   const tierMood = tierMoods[tier];
-  const streakColor = STREAK_COLORS[cosmetics.streakColor];
+  const activeStreakKey = cosmetics.randomStreakDaily
+    ? pickDailyStreakColor(cosmetics.ownedStreaks, cosmetics.streakColor)
+    : cosmetics.streakColor;
+  const streakColor = STREAK_COLORS[activeStreakKey];
   const hatVariant = findVariant(cosmetics.equippedHatVariant);
   const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
   const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
@@ -42,6 +47,19 @@ const HomePage = () => {
   useEffect(() => {
     questsStore.setStreak(streak);
   }, [streak]);
+
+  // Show tutorial on first ever visit (until user dismisses).
+  useEffect(() => {
+    if (!cosmetics.tutorialDone) {
+      const t = setTimeout(() => setShowTutorial(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [cosmetics.tutorialDone]);
+
+  const closeTutorial = () => {
+    setShowTutorial(false);
+    if (!cosmetics.tutorialDone) cosmeticsStore.set({ tutorialDone: true });
+  };
 
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
