@@ -93,10 +93,34 @@ export const pickDailyStreakColor = (
   return keys[day % keys.length];
 };
 
-let state: CosmeticsState = initial;
+// Persist a tiny slice of state across reloads so the tutorial only appears
+// on the very first visit. Other state remains in-memory as before.
+const TUTORIAL_KEY = "syn.tutorialDone";
+const readTutorialDone = (): boolean => {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(TUTORIAL_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+const writeTutorialDone = (done: boolean) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(TUTORIAL_KEY, done ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+};
+
+let state: CosmeticsState = { ...initial, tutorialDone: readTutorialDone() };
 const listeners = new Set<() => void>();
 
-const emit = () => listeners.forEach((l) => l());
+const emit = () => {
+  // Sync the persisted bit on every change.
+  writeTutorialDone(state.tutorialDone);
+  listeners.forEach((l) => l());
+};
 
 export const cosmeticsStore = {
   getState: () => state,
