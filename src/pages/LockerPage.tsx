@@ -203,19 +203,29 @@ const LockerPage = () => {
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Locker</h1>
-        <button
-          onClick={() => cosmeticsStore.resetEquipped()}
-          disabled={!hasAnyAccessoryEquipped}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border text-xs font-bold transition-colors ${
-            hasAnyAccessoryEquipped
-              ? "bg-card text-foreground border-border hover:bg-muted"
-              : "bg-muted/50 text-muted-foreground border-transparent"
-          }`}
-          aria-label="Remove all accessories"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Reset accessories
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="flex items-center justify-center w-8 h-8 rounded-full border bg-card text-muted-foreground hover:text-foreground shadow-soft"
+            aria-label="Open tutorial"
+            title="How it works"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => cosmeticsStore.resetEquipped()}
+            disabled={!hasAnyAccessoryEquipped}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border text-xs font-bold transition-colors ${
+              hasAnyAccessoryEquipped
+                ? "bg-card text-foreground border-border hover:bg-muted"
+                : "bg-muted/50 text-muted-foreground border-transparent"
+            }`}
+            aria-label="Remove all accessories"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reset accessories
+          </button>
+        </div>
       </div>
 
       <div className="px-6 mt-2">
@@ -413,6 +423,8 @@ const LockerPage = () => {
           );
         })}
       </div>
+
+      <Tutorial open={showTutorial} onClose={() => setShowTutorial(false)} />
     </div>
   );
 };
