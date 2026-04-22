@@ -126,17 +126,27 @@ const HomePage = () => {
           <p className="text-xs font-semibold text-muted-foreground">Welcome back</p>
           <h1 className="text-2xl font-bold text-foreground">Hi, friend ✿</h1>
         </div>
-        <div
-          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border"
-          style={{
-            borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
-            background: decoTier >= 1
-              ? `linear-gradient(135deg, ${streakColor.from}22, ${streakColor.to}11)`
-              : "hsl(var(--card))",
-          }}
-        >
-          <Coins className="w-4 h-4 text-warm-gold" />
-          <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="flex items-center justify-center w-8 h-8 rounded-full border bg-card text-muted-foreground hover:text-foreground shadow-soft"
+            aria-label="Open tutorial"
+            title="How it works"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+          <div
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border"
+            style={{
+              borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
+              background: decoTier >= 1
+                ? `linear-gradient(135deg, ${streakColor.from}22, ${streakColor.to}11)`
+                : "hsl(var(--card))",
+            }}
+          >
+            <Coins className="w-4 h-4 text-warm-gold" />
+            <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
+          </div>
         </div>
       </div>
 
@@ -420,6 +430,8 @@ const HomePage = () => {
           ))}
         </div>
       </div>
+
+      <Tutorial open={showTutorial} onClose={closeTutorial} />
     </div>
   );
 };
