@@ -735,9 +735,11 @@ const BlobChar = ({
       className={`inline-flex items-center justify-center ${onClick ? "cursor-pointer" : "cursor-default"} ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg viewBox="0 0 100 100" width={size} height={size}>
+      <svg viewBox="0 0 100 100" width={size} height={size} overflow="visible">
+        {/* Outfits like the cape sit behind the character */}
+        {outfit === "cape" && <Outfit kind={outfit} tint={outfitTint} />}
         {renderAnimal(shape, color, mood, isSyn)}
-        {outfit !== "none" && <Outfit kind={outfit} tint={outfitTint} />}
+        {outfit !== "none" && outfit !== "cape" && <Outfit kind={outfit} tint={outfitTint} />}
         {glasses !== "none" && <Glasses kind={glasses} tint={glassesTint} />}
         {hat !== "none" && <Hat kind={hat} tint={hatTint} />}
       </svg>

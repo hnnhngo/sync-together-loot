@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Gift, Coins, CheckCircle2, X, Sparkles } from "lucide-react";
+import { Flame, Gift, Coins, CheckCircle2, X, Sparkles, HelpCircle } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
 import QuestsPanel from "@/components/QuestsPanel";
-import { useCosmetics, STREAK_COLORS } from "@/lib/cosmetics-store";
+import Tutorial from "@/components/Tutorial";
+import { cosmeticsStore, useCosmetics, STREAK_COLORS, pickDailyStreakColor } from "@/lib/cosmetics-store";
 import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
 import { questsStore } from "@/lib/quests-store";
@@ -29,11 +30,15 @@ const HomePage = () => {
   const [showDailyLogin, setShowDailyLogin] = useState(true);
   const [claimedToday, setClaimedToday] = useState(false);
   const [tapCount, setTapCount] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const tier = Math.min(Math.floor(streak / 2), tierLabels.length - 1);
   const tierLabel = tierLabels[tier];
   const tierMood = tierMoods[tier];
-  const streakColor = STREAK_COLORS[cosmetics.streakColor];
+  const activeStreakKey = cosmetics.randomStreakDaily
+    ? pickDailyStreakColor(cosmetics.ownedStreaks, cosmetics.streakColor)
+    : cosmetics.streakColor;
+  const streakColor = STREAK_COLORS[activeStreakKey];
   const hatVariant = findVariant(cosmetics.equippedHatVariant);
   const outfitVariant = findVariant(cosmetics.equippedOutfitVariant);
   const glassesVariant = findVariant(cosmetics.equippedGlassesVariant);
@@ -42,6 +47,19 @@ const HomePage = () => {
   useEffect(() => {
     questsStore.setStreak(streak);
   }, [streak]);
+
+  // Show tutorial on first ever visit (until user dismisses).
+  useEffect(() => {
+    if (!cosmetics.tutorialDone) {
+      const t = setTimeout(() => setShowTutorial(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [cosmetics.tutorialDone]);
+
+  const closeTutorial = () => {
+    setShowTutorial(false);
+    if (!cosmetics.tutorialDone) cosmeticsStore.set({ tutorialDone: true });
+  };
 
   const handleClaim = () => {
     const reward = dailyRewards.find((r) => !r.claimed && !claimedToday);
@@ -108,17 +126,27 @@ const HomePage = () => {
           <p className="text-xs font-semibold text-muted-foreground">Welcome back</p>
           <h1 className="text-2xl font-bold text-foreground">Hi, friend ✿</h1>
         </div>
-        <div
-          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border"
-          style={{
-            borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
-            background: decoTier >= 1
-              ? `linear-gradient(135deg, ${streakColor.from}22, ${streakColor.to}11)`
-              : "hsl(var(--card))",
-          }}
-        >
-          <Coins className="w-4 h-4 text-warm-gold" />
-          <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="flex items-center justify-center w-8 h-8 rounded-full border bg-card text-muted-foreground hover:text-foreground shadow-soft"
+            aria-label="Open tutorial"
+            title="How it works"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+          <div
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border"
+            style={{
+              borderColor: decoTier >= 1 ? streakColor.from : "hsl(var(--border))",
+              background: decoTier >= 1
+                ? `linear-gradient(135deg, ${streakColor.from}22, ${streakColor.to}11)`
+                : "hsl(var(--card))",
+            }}
+          >
+            <Coins className="w-4 h-4 text-warm-gold" />
+            <span className="text-sm font-bold text-foreground tabular-nums">{points.toLocaleString()}</span>
+          </div>
         </div>
       </div>
 
@@ -402,6 +430,8 @@ const HomePage = () => {
           ))}
         </div>
       </div>
+
+      <Tutorial open={showTutorial} onClose={closeTutorial} />
     </div>
   );
 };

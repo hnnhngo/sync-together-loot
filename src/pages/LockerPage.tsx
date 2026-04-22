@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Crown, Star, Sparkles, Palette, Check, Flame, RotateCcw, Lock, Info } from "lucide-react";
+import { Crown, Star, Sparkles, Palette, Check, Flame, RotateCcw, Lock, Info, HelpCircle } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { BlobShape, BlobColor, Mood, HatKey, OutfitKey, GlassesKey } from "@/components/BlobChar";
+import Tutorial from "@/components/Tutorial";
 import {
   cosmeticsStore, useCosmetics, STREAK_COLORS, StreakColorKey, shapeHasColorVariants,
 } from "@/lib/cosmetics-store";
@@ -25,7 +26,7 @@ interface CosmeticItem {
 
 const inventory: CosmeticItem[] = [
   // Animals
-  { id: 10, name: "Capybara (Syn)", type: "shape", rarity: "Legendary", shape: "capybara" },
+  { id: 10, name: "Syn",            type: "shape", rarity: "Legendary", shape: "capybara" },
   { id: 11, name: "Bunny",          type: "shape", rarity: "Common",    shape: "bunny" },
   { id: 12, name: "Bear",           type: "shape", rarity: "Common",    shape: "bear" },
   { id: 13, name: "Cat",            type: "shape", rarity: "Common",    shape: "cat" },
@@ -106,6 +107,7 @@ const LockerPage = () => {
   const cosmetics = useCosmetics();
   const [filter, setFilter] = useState<"all" | CosmeticType>("all");
   const [previewMood, setPreviewMood] = useState<Mood>("happy");
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const colorEnabled = shapeHasColorVariants(cosmetics.shape);
 
@@ -201,19 +203,29 @@ const LockerPage = () => {
     <div className="min-h-screen bg-background">
       <div className="flex items-center justify-between px-5 pt-12 pb-2">
         <h1 className="text-2xl font-bold text-foreground">Locker</h1>
-        <button
-          onClick={() => cosmeticsStore.resetEquipped()}
-          disabled={!hasAnyAccessoryEquipped}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border text-xs font-bold transition-colors ${
-            hasAnyAccessoryEquipped
-              ? "bg-card text-foreground border-border hover:bg-muted"
-              : "bg-muted/50 text-muted-foreground border-transparent"
-          }`}
-          aria-label="Remove all accessories"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Reset accessories
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowTutorial(true)}
+            className="flex items-center justify-center w-8 h-8 rounded-full border bg-card text-muted-foreground hover:text-foreground shadow-soft"
+            aria-label="Open tutorial"
+            title="How it works"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => cosmeticsStore.resetEquipped()}
+            disabled={!hasAnyAccessoryEquipped}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-soft border text-xs font-bold transition-colors ${
+              hasAnyAccessoryEquipped
+                ? "bg-card text-foreground border-border hover:bg-muted"
+                : "bg-muted/50 text-muted-foreground border-transparent"
+            }`}
+            aria-label="Remove all accessories"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reset accessories
+          </button>
+        </div>
       </div>
 
       <div className="px-6 mt-2">
@@ -288,8 +300,35 @@ const LockerPage = () => {
           {/* Streak preview */}
           <div className="inline-flex items-center gap-1.5 bg-card rounded-full px-3 py-1 mt-3 border border-border">
             <Flame className={`w-4 h-4 ${equippedStreak.flameClass}`} fill="currentColor" />
-            <span className="text-xs font-bold text-foreground">{equippedStreak.name} streak</span>
+            <span className="text-xs font-bold text-foreground">
+              {cosmetics.randomStreakDaily ? "Random daily" : `${equippedStreak.name} streak`}
+            </span>
           </div>
+
+          {/* Random streak color daily toggle */}
+          <button
+            onClick={() => cosmeticsStore.set({ randomStreakDaily: !cosmetics.randomStreakDaily })}
+            className={`mt-3 mx-auto flex items-center gap-2 rounded-full px-3 py-1.5 border-2 text-[11px] font-bold transition-colors ${
+              cosmetics.randomStreakDaily
+                ? "bg-primary text-primary-foreground border-primary shadow-soft"
+                : "bg-card text-foreground border-border"
+            }`}
+            aria-pressed={cosmetics.randomStreakDaily}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Randomize streak color daily
+            <span
+              className={`w-7 h-4 rounded-full relative transition-colors ${
+                cosmetics.randomStreakDaily ? "bg-primary-foreground/30" : "bg-muted"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 w-3 h-3 rounded-full bg-card transition-all ${
+                  cosmetics.randomStreakDaily ? "left-3.5" : "left-0.5"
+                }`}
+              />
+            </span>
+          </button>
         </div>
       </div>
 
@@ -384,6 +423,8 @@ const LockerPage = () => {
           );
         })}
       </div>
+
+      <Tutorial open={showTutorial} onClose={() => setShowTutorial(false)} />
     </div>
   );
 };
