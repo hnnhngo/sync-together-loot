@@ -45,6 +45,8 @@ export interface CosmeticsState {
   outfit: OutfitKey;
   glasses: GlassesKey;
   streakColor: StreakColorKey;
+  /** When true, streak color is randomized once per day across owned streak colors. */
+  randomStreakDaily: boolean;
   /** Owned counts per accessory key (used for duplicate→coin logic). */
   ownedHats: Partial<Record<HatKey, number>>;
   ownedOutfits: Partial<Record<OutfitKey, number>>;
@@ -58,6 +60,8 @@ export interface CosmeticsState {
   equippedHatVariant?: string;
   equippedOutfitVariant?: string;
   equippedGlassesVariant?: string;
+  /** Tutorial completion flag (controls first-run overlay). */
+  tutorialDone: boolean;
 }
 
 const initial: CosmeticsState = {
@@ -67,6 +71,7 @@ const initial: CosmeticsState = {
   outfit: "none",
   glasses: "none",
   streakColor: "ember",
+  randomStreakDaily: false,
   ownedHats: { crown: 1, beanie: 1, flowerCrown: 1, halo: 1 },
   ownedOutfits: { scarf: 1, cape: 1, bowtie: 1 },
   ownedGlasses: { round: 1, shades: 1 },
@@ -74,6 +79,18 @@ const initial: CosmeticsState = {
   // Default starter animals — the rest are unlocked via the Station Animal Shop.
   ownedShapes: { capybara: true, bunny: true, bear: true, cat: true },
   ownedVariants: {},
+  tutorialDone: false,
+};
+
+/** Pick a streak color from owned ones, deterministic per day. */
+export const pickDailyStreakColor = (
+  owned: Partial<Record<StreakColorKey, number>>,
+  fallback: StreakColorKey,
+): StreakColorKey => {
+  const keys = (Object.keys(owned) as StreakColorKey[]).filter((k) => (owned[k] ?? 0) > 0);
+  if (keys.length === 0) return fallback;
+  const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  return keys[day % keys.length];
 };
 
 let state: CosmeticsState = initial;
