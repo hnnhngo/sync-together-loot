@@ -112,7 +112,7 @@ const CrewPage = () => {
   );
 
   const copyCode = async () => {
-    try { await navigator.clipboard.writeText(MY_FRIEND_CODE); } catch {}
+    try { await navigator.clipboard.writeText(myFriendCode); } catch {}
     setCodeCopied(true);
     setTimeout(() => setCodeCopied(false), 1500);
   };
@@ -162,7 +162,7 @@ const CrewPage = () => {
       <div className="mx-6 mt-3 bg-gradient-to-br from-blob-pink/15 to-blob-blue/15 border border-border rounded-2xl p-3 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Your friend code</p>
-          <p className="text-base font-bold text-foreground tabular-nums">{MY_FRIEND_CODE}</p>
+          <p className="text-base font-bold text-foreground tabular-nums">{myFriendCode}</p>
         </div>
         <button onClick={copyCode} className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground">
           {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
@@ -492,7 +492,7 @@ const CrewPage = () => {
               <div className="bg-gradient-to-br from-blob-lavender/25 to-blob-blue/20 border border-border rounded-2xl p-3 mb-4">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Your code</p>
                 <div className="flex items-center justify-between">
-                  <p className="text-base font-bold text-foreground tabular-nums">{MY_FRIEND_CODE}</p>
+                  <p className="text-base font-bold text-foreground tabular-nums">{myFriendCode}</p>
                   <button
                     onClick={copyCode}
                     className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground"
