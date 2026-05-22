@@ -27,7 +27,12 @@ const dailyRewards = [
 const HomePage = () => {
   const cosmetics = useCosmetics();
   const { points } = useCoins();
-  const [streak, setStreak] = useState(3);
+  const { profile } = useProfile();
+  const streak = profile?.current_streak ?? 0;
+  const setStreak = (next: number | ((s: number) => number)) => {
+    const value = typeof next === "function" ? (next as (s: number) => number)(streak) : next;
+    profileStore.setStreak(value);
+  };
   const [showDailyLogin, setShowDailyLogin] = useState(true);
   // Daily login claim is persisted per calendar day so it can only be claimed once per day.
   const DAILY_CLAIM_KEY = "syn.dailyLogin.claimedOn";
