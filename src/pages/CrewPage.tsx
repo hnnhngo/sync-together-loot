@@ -164,10 +164,23 @@ const CrewPage = () => {
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Your friend code</p>
           <p className="text-base font-bold text-foreground tabular-nums">{myFriendCode}</p>
         </div>
-        <button onClick={copyCode} className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground">
-          {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
-          {codeCopied ? "Copied!" : "Copy"}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={async () => {
+              const code = await profileStore.regenerateFriendCode();
+              if (code) toast({ title: "New friend code generated!", description: code });
+            }}
+            className="flex items-center justify-center bg-card border border-border rounded-full p-1.5 text-foreground"
+            aria-label="Regenerate friend code"
+            title="Generate new code"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={copyCode} className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground">
+            {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
+            {codeCopied ? "Copied!" : "Copy"}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
