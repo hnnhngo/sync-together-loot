@@ -87,6 +87,8 @@ const statusColors = { studying: "bg-blob-sage", idle: "bg-warm-gold", offline: 
 const statusLabels = { studying: "Studying", idle: "Idle", offline: "Offline" };
 
 const CrewPage = () => {
+  const { profile } = useProfile();
+  const myFriendCode = profile?.friend_code ?? "SYN-----";
   const [tab, setTab] = useState<"friends" | "groups">("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const [nudgedIds, setNudgedIds] = useState<number[]>([]);
