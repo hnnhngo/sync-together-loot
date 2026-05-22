@@ -17,23 +17,32 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          current_streak: number
           display_name: string | null
           email: string | null
+          friend_code: string | null
           id: string
+          purchased_accessories: Json
           updated_at: string
         }
         Insert: {
           created_at?: string
+          current_streak?: number
           display_name?: string | null
           email?: string | null
+          friend_code?: string | null
           id: string
+          purchased_accessories?: Json
           updated_at?: string
         }
         Update: {
           created_at?: string
+          current_streak?: number
           display_name?: string | null
           email?: string | null
+          friend_code?: string | null
           id?: string
+          purchased_accessories?: Json
           updated_at?: string
         }
         Relationships: []
@@ -43,7 +52,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_friend_code: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

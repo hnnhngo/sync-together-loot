@@ -7,6 +7,7 @@ import StationPage from "@/pages/StationPage";
 import CrewPage from "@/pages/CrewPage";
 import LockerPage from "@/pages/LockerPage";
 import { useAuth } from "@/contexts/AuthContext";
+import ProfileSync from "@/components/ProfileSync";
 
 const pages = [HomePage, AlarmPage, StationPage, CrewPage, LockerPage];
 
@@ -17,6 +18,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative bg-background">
+      <ProfileSync />
       <button
         onClick={signOut}
         aria-label="Sign out"

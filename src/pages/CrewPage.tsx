@@ -2,11 +2,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, HandMetal, UserPlus, Search, BookOpen, Zap, Circle, MessageCircle,
-  Crown, Star, Flame, X, ChevronRight, Copy, Check, AlarmClock, Send, LogIn,
+  Crown, Star, Flame, X, ChevronRight, Copy, Check, AlarmClock, Send, LogIn, RefreshCw,
 } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { BlobShape, BlobColor, Mood } from "@/components/BlobChar";
 import { toast } from "@/hooks/use-toast";
+import { profileStore, useProfile } from "@/lib/profile-store";
 
 interface FriendCosmetic {
   aura: string;
@@ -80,12 +81,14 @@ const initialGroups: StudyGroup[] = [
   },
 ];
 
-const MY_FRIEND_CODE = "SYN-9F3K-2X7Q";
+
 
 const statusColors = { studying: "bg-blob-sage", idle: "bg-warm-gold", offline: "bg-muted-foreground/40" };
 const statusLabels = { studying: "Studying", idle: "Idle", offline: "Offline" };
 
 const CrewPage = () => {
+  const { profile } = useProfile();
+  const myFriendCode = profile?.friend_code ?? "SYN-----";
   const [tab, setTab] = useState<"friends" | "groups">("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const [nudgedIds, setNudgedIds] = useState<number[]>([]);
@@ -109,7 +112,7 @@ const CrewPage = () => {
   );
 
   const copyCode = async () => {
-    try { await navigator.clipboard.writeText(MY_FRIEND_CODE); } catch {}
+    try { await navigator.clipboard.writeText(myFriendCode); } catch {}
     setCodeCopied(true);
     setTimeout(() => setCodeCopied(false), 1500);
   };
@@ -159,12 +162,25 @@ const CrewPage = () => {
       <div className="mx-6 mt-3 bg-gradient-to-br from-blob-pink/15 to-blob-blue/15 border border-border rounded-2xl p-3 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Your friend code</p>
-          <p className="text-base font-bold text-foreground tabular-nums">{MY_FRIEND_CODE}</p>
+          <p className="text-base font-bold text-foreground tabular-nums">{myFriendCode}</p>
         </div>
-        <button onClick={copyCode} className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground">
-          {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
-          {codeCopied ? "Copied!" : "Copy"}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={async () => {
+              const code = await profileStore.regenerateFriendCode();
+              if (code) toast({ title: "New friend code generated!", description: code });
+            }}
+            className="flex items-center justify-center bg-card border border-border rounded-full p-1.5 text-foreground"
+            aria-label="Regenerate friend code"
+            title="Generate new code"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={copyCode} className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground">
+            {codeCopied ? <Check className="w-3.5 h-3.5 text-blob-sage" /> : <Copy className="w-3.5 h-3.5" />}
+            {codeCopied ? "Copied!" : "Copy"}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -489,7 +505,7 @@ const CrewPage = () => {
               <div className="bg-gradient-to-br from-blob-lavender/25 to-blob-blue/20 border border-border rounded-2xl p-3 mb-4">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Your code</p>
                 <div className="flex items-center justify-between">
-                  <p className="text-base font-bold text-foreground tabular-nums">{MY_FRIEND_CODE}</p>
+                  <p className="text-base font-bold text-foreground tabular-nums">{myFriendCode}</p>
                   <button
                     onClick={copyCode}
                     className="flex items-center gap-1 bg-card border border-border rounded-full px-3 py-1.5 text-xs font-bold text-foreground"
