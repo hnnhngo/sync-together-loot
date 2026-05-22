@@ -2,11 +2,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, HandMetal, UserPlus, Search, BookOpen, Zap, Circle, MessageCircle,
-  Crown, Star, Flame, X, ChevronRight, Copy, Check, AlarmClock, Send, LogIn,
+  Crown, Star, Flame, X, ChevronRight, Copy, Check, AlarmClock, Send, LogIn, RefreshCw,
 } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
 import BlobChar, { BlobShape, BlobColor, Mood } from "@/components/BlobChar";
 import { toast } from "@/hooks/use-toast";
+import { profileStore, useProfile } from "@/lib/profile-store";
 
 interface FriendCosmetic {
   aura: string;
