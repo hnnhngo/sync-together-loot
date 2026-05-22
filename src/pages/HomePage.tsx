@@ -9,6 +9,7 @@ import { cosmeticsStore, useCosmetics, STREAK_COLORS, pickDailyStreakColor } fro
 import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
 import { questsStore } from "@/lib/quests-store";
+import { profileStore, useProfile } from "@/lib/profile-store";
 
 const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
 const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
