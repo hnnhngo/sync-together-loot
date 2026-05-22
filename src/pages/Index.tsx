@@ -18,6 +18,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen max-w-md mx-auto relative bg-background">
+      <ProfileSync />
       <button
         onClick={signOut}
         aria-label="Sign out"
