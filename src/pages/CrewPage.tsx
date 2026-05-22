@@ -81,7 +81,7 @@ const initialGroups: StudyGroup[] = [
   },
 ];
 
-const MY_FRIEND_CODE = "SYN-9F3K-2X7Q";
+
 
 const statusColors = { studying: "bg-blob-sage", idle: "bg-warm-gold", offline: "bg-muted-foreground/40" };
 const statusLabels = { studying: "Studying", idle: "Idle", offline: "Offline" };
