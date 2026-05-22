@@ -7,6 +7,7 @@ import StationPage from "@/pages/StationPage";
 import CrewPage from "@/pages/CrewPage";
 import LockerPage from "@/pages/LockerPage";
 import { useAuth } from "@/contexts/AuthContext";
+import ProfileSync from "@/components/ProfileSync";
 
 const pages = [HomePage, AlarmPage, StationPage, CrewPage, LockerPage];
 
