@@ -329,7 +329,7 @@ const HomePage = () => {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-foreground leading-tight">Daily Reward</h2>
-                  <p className="text-[10px] text-muted-foreground font-semibold">Day {streak} of 7</p>
+                  <p className="text-[10px] text-muted-foreground font-semibold">Day {daily.rewardDay} of 7</p>
                 </div>
               </div>
               <button onClick={() => setShowDailyLogin(false)} className="text-muted-foreground hover:text-foreground">
@@ -338,15 +338,16 @@ const HomePage = () => {
             </div>
 
             <div className="grid grid-cols-7 gap-1.5 mb-4">
-              {dailyRewards.map((r) => {
-                const isClaimable = !r.claimed && r.day === 3 && !claimedToday;
-                const isJustClaimed = r.day === 3 && claimedToday;
+              {DAILY_REWARDS.map((r) => {
+                const isCurrent = r.day === daily.rewardDay;
+                const isClaimable = isCurrent && canClaimToday;
+                const isJustClaimed = isCurrent && !canClaimToday;
                 return (
                   <motion.div
                     key={r.day}
                     whileHover={isClaimable ? { scale: 1.05 } : undefined}
                     className={`flex flex-col items-center rounded-2xl py-2 text-center transition-all ${
-                      r.claimed || isJustClaimed
+                      isJustClaimed
                         ? "bg-blob-mint/30"
                         : isClaimable
                         ? "bg-blob-yellow/40 ring-2 ring-warm-gold/50"
@@ -354,7 +355,7 @@ const HomePage = () => {
                     }`}
                   >
                     <span className="text-[9px] font-bold text-muted-foreground">D{r.day}</span>
-                    {r.claimed || isJustClaimed ? (
+                    {isJustClaimed ? (
                       <CheckCircle2 className="w-4 h-4 text-blob-sage mt-1" />
                     ) : (
                       <div className="flex items-center gap-0.5 mt-1">
@@ -370,17 +371,19 @@ const HomePage = () => {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleClaim}
-              disabled={claimedToday}
+              disabled={!canClaimToday}
               className={`w-full py-3 rounded-2xl text-sm font-bold transition-colors ${
-                claimedToday ? "bg-muted text-muted-foreground" : "text-white shadow-pop"
+                !canClaimToday ? "bg-muted text-muted-foreground" : "text-white shadow-pop"
               }`}
               style={
-                claimedToday
+                !canClaimToday
                   ? undefined
                   : { background: `linear-gradient(135deg, ${streakColor.from}, ${streakColor.to})` }
               }
             >
-              {claimedToday ? "Claimed today ✓" : "Claim 20 coins"}
+              {!canClaimToday
+                ? "Claimed today ✓ — come back tomorrow"
+                : `Claim ${DAILY_REWARDS[daily.rewardDay - 1]?.coins ?? 0} coins`}
             </motion.button>
           </motion.div>
         )}
