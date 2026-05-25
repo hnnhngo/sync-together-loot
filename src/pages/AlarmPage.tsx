@@ -6,35 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import MascotBubble from "@/components/MascotBubble";
 import { questsStore } from "@/lib/quests-store";
-
-type DayId = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-
-interface Alarm {
-  id: number;
-  label: string;
-  hour: number;
-  minute: number;
-  buffer: number;
-  syncWith: string | null;
-  enabled: boolean;
-  days: DayId[];
-}
-
-const dayList: { id: DayId; label: string }[] = [
-  { id: "mon", label: "M" },
-  { id: "tue", label: "T" },
-  { id: "wed", label: "W" },
-  { id: "thu", label: "T" },
-  { id: "fri", label: "F" },
-  { id: "sat", label: "S" },
-  { id: "sun", label: "S" },
-];
-
-const initialAlarms: Alarm[] = [
-  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["mon", "wed", "fri"] },
-  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["tue"] },
-  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["mon", "tue", "wed", "thu", "fri"] },
-];
+import { alarmsStore, useAlarms, type DayId, type Alarm } from "@/lib/alarms-store";
 
 const formatTime = (h: number, m: number) =>
   `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
