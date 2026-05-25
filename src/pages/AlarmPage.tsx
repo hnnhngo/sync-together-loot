@@ -297,48 +297,36 @@ const BufferSlider = ({
 
 const AlarmPage = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [alarms, setAlarms] = useState<Alarm[]>(initialAlarms);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { alarms } = useAlarms();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(true);
 
-  const toggleAlarm = (id: number) =>
-    setAlarms((prev) =>
-      prev.map((a) => {
-        if (a.id !== id) return a;
-        const next = !a.enabled;
-        if (next) questsStore.bump("alarmsKept", 1);
-        return { ...a, enabled: next };
-      }),
-    );
-
-  const updateLabel = (id: number, label: string) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, label } : a)));
-
-  const updateTime = (id: number, h: number, m: number) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, hour: h, minute: m } : a)));
-
-  const updateBuffer = (id: number, v: number) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, buffer: v } : a)));
-
-  const toggleDay = (id: number, day: DayId) =>
-    setAlarms((prev) =>
-      prev.map((a) =>
-        a.id === id
-          ? { ...a, days: a.days.includes(day) ? a.days.filter((d) => d !== day) : [...a.days, day] }
-          : a
-      )
-    );
-
-  const deleteAlarm = (id: number) => setAlarms((prev) => prev.filter((a) => a.id !== id));
-
-  const addAlarm = () => {
-    const newId = Math.max(0, ...alarms.map((a) => a.id)) + 1;
-    setAlarms((prev) => [
-      ...prev,
-      { id: newId, label: "New Alarm", hour: 12, minute: 0, buffer: 60, syncWith: null, enabled: true, days: [] },
-    ]);
-    setExpandedId(newId);
+  const toggleAlarm = (id: string) => {
+    const a = alarms.find((x) => x.id === id);
+    if (!a) return;
+    const next = !a.enabled;
+    if (next) questsStore.bump("alarmsKept", 1);
+    alarmsStore.update(id, { enabled: next });
   };
+
+  const updateLabel = (id: string, label: string) => alarmsStore.update(id, { label });
+  const updateTime = (id: string, h: number, m: number) => alarmsStore.update(id, { hour: h, minute: m });
+  const updateBuffer = (id: string, v: number) => alarmsStore.update(id, { buffer: v });
+
+  const toggleDay = (id: string, day: DayId) => {
+    const a = alarms.find((x) => x.id === id);
+    if (!a) return;
+    const days = a.days.includes(day) ? a.days.filter((d) => d !== day) : [...a.days, day];
+    alarmsStore.update(id, { days });
+  };
+
+  const deleteAlarm = (id: string) => alarmsStore.remove(id);
+
+  const addAlarm = async () => {
+    const a = await alarmsStore.add();
+    if (a) setExpandedId(a.id);
+  };
+
 
   return (
     <div className="min-h-screen bg-background">
