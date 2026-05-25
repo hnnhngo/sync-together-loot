@@ -10,37 +10,23 @@ import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
 import { questsStore } from "@/lib/quests-store";
 import { profileStore, useProfile } from "@/lib/profile-store";
+import { dailyRewardStore, useDailyReward, DAILY_REWARDS } from "@/lib/daily-reward-store";
 
 const tierLabels = ["Just starting", "Warming up", "On a roll!", "Blazing!", "Unstoppable!"];
 const tierMoods = ["sleepy", "happy", "happy", "excited", "excited"] as const;
-
-const dailyRewards = [
-  { day: 1, coins: 10, claimed: true },
-  { day: 2, coins: 15, claimed: true },
-  { day: 3, coins: 20, claimed: false },
-  { day: 4, coins: 30, claimed: false },
-  { day: 5, coins: 50, claimed: false },
-  { day: 6, coins: 75, claimed: false },
-  { day: 7, coins: 150, claimed: false },
-];
 
 const HomePage = () => {
   const cosmetics = useCosmetics();
   const { points } = useCoins();
   const { profile } = useProfile();
+  const daily = useDailyReward();
   const streak = profile?.current_streak ?? 0;
   const setStreak = (next: number | ((s: number) => number)) => {
     const value = typeof next === "function" ? (next as (s: number) => number)(streak) : next;
     profileStore.setStreak(value);
   };
   const [showDailyLogin, setShowDailyLogin] = useState(true);
-  // Daily login claim is persisted per calendar day so it can only be claimed once per day.
-  const DAILY_CLAIM_KEY = "syn.dailyLogin.claimedOn";
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const [claimedToday, setClaimedToday] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem(DAILY_CLAIM_KEY) === todayStr;
-  });
+  const canClaimToday = dailyRewardStore.canClaim();
   const [tapCount, setTapCount] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -73,15 +59,11 @@ const HomePage = () => {
     if (!cosmetics.tutorialDone) cosmeticsStore.set({ tutorialDone: true });
   };
 
-  const handleClaim = () => {
-    if (claimedToday) return;
-    const reward = dailyRewards.find((r) => !r.claimed);
-    if (reward) {
-      coinsStore.add(reward.coins);
-      setClaimedToday(true);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(DAILY_CLAIM_KEY, todayStr);
-      }
+  const handleClaim = async () => {
+    if (!canClaimToday) return;
+    const res = await dailyRewardStore.claim();
+    if (res.ok) {
+      // Reward day advances; bump the visible streak too.
       setStreak((s) => s + 1);
     }
   };
