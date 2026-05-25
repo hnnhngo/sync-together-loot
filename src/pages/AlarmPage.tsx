@@ -407,9 +407,9 @@ const AlarmPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {alarm.syncWith && (
+                  {alarm.sync_with && (
                     <span className="flex items-center gap-1 bg-secondary/15 text-secondary px-2 py-0.5 rounded-full text-[10px] font-semibold">
-                      <Users className="w-3 h-3" /> {alarm.syncWith}
+                      <Users className="w-3 h-3" /> {alarm.sync_with}
                     </span>
                   )}
                   <div onClick={(e) => e.stopPropagation()}>
@@ -489,7 +489,7 @@ const AlarmPage = () => {
                         <div className="flex items-center gap-2">
                           <Bell className="w-4 h-4 text-muted-foreground" />
                           <p className="text-xs text-muted-foreground">
-                            {alarm.syncWith ? `Synced with ${alarm.syncWith}` : "Solo alarm"}
+                            {alarm.sync_with ? `Synced with ${alarm.sync_with}` : "Solo alarm"}
                           </p>
                         </div>
                         <button onClick={() => deleteAlarm(alarm.id)} className="text-destructive">
