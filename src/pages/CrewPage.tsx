@@ -1,114 +1,54 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users, HandMetal, UserPlus, Search, BookOpen, Zap, Circle, MessageCircle,
-  Crown, Star, Flame, X, ChevronRight, Copy, Check, AlarmClock, Send, LogIn, RefreshCw,
+  Users, UserPlus, Search, BookOpen, Zap, MessageCircle,
+  X, Copy, Check, AlarmClock, Send, LogIn, RefreshCw, Trash2, Plus,
 } from "lucide-react";
 import MascotBubble from "@/components/MascotBubble";
-import BlobChar, { BlobShape, BlobColor, Mood } from "@/components/BlobChar";
+import BlobChar, { BlobShape, BlobColor } from "@/components/BlobChar";
 import { toast } from "@/hooks/use-toast";
 import { profileStore, useProfile } from "@/lib/profile-store";
+import { friendsStore, useFriends, type FriendEntry } from "@/lib/friends-store";
+import { groupsStore, useGroups, type GroupEntry } from "@/lib/groups-store";
 
-interface FriendCosmetic {
-  aura: string;
-  frame: string;
-  accessory: string;
-}
-
-interface Friend {
-  id: number;
-  name: string;
-  shape: BlobShape;
-  color: BlobColor;
-  mood: Mood;
-  status: "studying" | "idle" | "offline";
-  streak: number;
-  level: number;
-  studyHours: number;
-  cosmetics: FriendCosmetic;
-  bio: string;
-}
-
-interface GroupMember { name: string; shape: BlobShape; color: BlobColor }
-interface StudyGroup {
-  id: number;
-  name: string;
-  members: GroupMember[];
-  active: boolean;
-  multiplier: number;
-  subject: string;
-  joinable: boolean;
-  joined: boolean;
-  requested?: boolean;
-  invited?: boolean;
-}
-
-const friends: Friend[] = [
-  { id: 1, name: "Alex", shape: "fox", color: "pink", mood: "excited", status: "studying", streak: 12, level: 24, studyHours: 156, cosmetics: { aura: "Ember Streak", frame: "Phoenix Frame", accessory: "Crown Hat" }, bio: "Math major grinding for finals" },
-  { id: 2, name: "Jordan", shape: "bunny", color: "lavender", mood: "sleepy", status: "idle", streak: 5, level: 18, studyHours: 89, cosmetics: { aura: "Rose Streak", frame: "—", accessory: "Flower Crown" }, bio: "CS student. Always debugging." },
-  { id: 3, name: "Sam", shape: "frog", color: "mint", mood: "happy", status: "studying", streak: 8, level: 21, studyHours: 134, cosmetics: { aura: "Emerald Streak", frame: "Vine Frame", accessory: "Round Glasses" }, bio: "Bio major & coffee addict" },
-  { id: 4, name: "Taylor", shape: "chick", color: "yellow", mood: "wink", status: "offline", streak: 2, level: 12, studyHours: 45, cosmetics: { aura: "—", frame: "—", accessory: "Bowtie" }, bio: "Art student vibing" },
-  { id: 5, name: "Morgan", shape: "panda", color: "orange", mood: "happy", status: "idle", streak: 15, level: 30, studyHours: 210, cosmetics: { aura: "Gold Streak", frame: "Phoenix Frame", accessory: "Top Hat" }, bio: "Top of the leaderboard" },
-];
-
-const initialGroups: StudyGroup[] = [
-  { id: 1, name: "Math Squad", active: true, multiplier: 2.5, subject: "Calculus II", joinable: true, joined: true,
-    members: [
-      { name: "Alex", shape: "fox", color: "pink" },
-      { name: "Sam", shape: "frog", color: "mint" },
-      { name: "Morgan", shape: "panda", color: "orange" },
-      { name: "You", shape: "capybara", color: "blue" },
-    ],
-  },
-  { id: 2, name: "Essay Club", active: false, multiplier: 1.0, subject: "English 201", joinable: true, joined: true,
-    members: [
-      { name: "Jordan", shape: "bunny", color: "lavender" },
-      { name: "Taylor", shape: "chick", color: "yellow" },
-      { name: "You", shape: "capybara", color: "blue" },
-    ],
-  },
-  { id: 3, name: "Physics Lab Crew", active: false, multiplier: 1.5, subject: "Physics 102", joinable: true, joined: false, invited: true,
-    members: [
-      { name: "Riley", shape: "bear", color: "coral" },
-      { name: "Casey", shape: "cat", color: "lavender" },
-    ],
-  },
-  { id: 4, name: "CS Night Owls", active: false, multiplier: 1.8, subject: "Algorithms", joinable: true, joined: false,
-    members: [
-      { name: "Sky", shape: "fox", color: "yellow" },
-      { name: "Dev", shape: "panda", color: "blue" },
-    ],
-  },
-];
-
-
-
-const statusColors = { studying: "bg-blob-sage", idle: "bg-warm-gold", offline: "bg-muted-foreground/40" };
-const statusLabels = { studying: "Studying", idle: "Idle", offline: "Offline" };
+// Deterministic blob avatar for a given user id (so each friend looks consistent).
+const shapes: BlobShape[] = ["fox", "bunny", "frog", "chick", "panda", "bear", "cat", "capybara"];
+const colors: BlobColor[] = ["pink", "lavender", "mint", "yellow", "orange", "coral", "blue"];
+const hashId = (id: string) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return h;
+};
+const avatarFor = (id: string) => {
+  const h = hashId(id);
+  return { shape: shapes[h % shapes.length], color: colors[(h >> 4) % colors.length] };
+};
 
 const CrewPage = () => {
   const { profile } = useProfile();
+  const { friends } = useFriends();
+  const { groups } = useGroups();
   const myFriendCode = profile?.friend_code ?? "SYN-----";
+
   const [tab, setTab] = useState<"friends" | "groups">("friends");
   const [searchQuery, setSearchQuery] = useState("");
-  const [nudgedIds, setNudgedIds] = useState<number[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
-  const [groups, setGroups] = useState<StudyGroup[]>(initialGroups);
+  const [selectedFriend, setSelectedFriend] = useState<FriendEntry | null>(null);
   const [friendCodeInput, setFriendCodeInput] = useState("");
   const [codeCopied, setCodeCopied] = useState(false);
   const [showAddFriend, setShowAddFriend] = useState(false);
-  const [suggestForGroup, setSuggestForGroup] = useState<StudyGroup | null>(null);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [groupSubject, setGroupSubject] = useState("");
+  const [suggestForGroup, setSuggestForGroup] = useState<GroupEntry | null>(null);
   const [suggestTime, setSuggestTime] = useState("19:00");
   const [suggestLabel, setSuggestLabel] = useState("Study Session");
 
-  const handleNudge = (id: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setNudgedIds((prev) => [...prev, id]);
-    setTimeout(() => setNudgedIds((prev) => prev.filter((nid) => nid !== id)), 3000);
-  };
+  const accepted = friends.filter((f) => f.status === "accepted");
+  const incoming = friends.filter((f) => f.incoming);
+  const outgoing = friends.filter((f) => f.status === "pending" && !f.incoming);
 
-  const filteredFriends = friends.filter((f) =>
-    f.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAccepted = accepted.filter((f) =>
+    f.displayName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const copyCode = async () => {
@@ -117,30 +57,44 @@ const CrewPage = () => {
     setTimeout(() => setCodeCopied(false), 1500);
   };
 
-  const addFriendByCode = () => {
-    if (!friendCodeInput.trim()) return;
-    toast({ title: "Friend request sent!", description: `Code ${friendCodeInput.toUpperCase()} — they'll be notified.` });
-    setFriendCodeInput("");
+  const addFriendByCode = async () => {
+    const res = await friendsStore.addByCode(friendCodeInput);
+    toast({ title: res.ok ? "Sent!" : "Couldn't add", description: res.message });
+    if (res.ok) {
+      setFriendCodeInput("");
+      setShowAddFriend(false);
+    }
   };
 
-  const requestJoin = (id: number) => {
-    setGroups((prev) => prev.map((g) => g.id === id ? { ...g, requested: true } : g));
-    toast({ title: "Request sent", description: "We'll let you know when they accept!" });
+  const acceptFriend = async (id: string) => {
+    await friendsStore.accept(id);
+    toast({ title: "Friend added 🎉" });
   };
 
-  const acceptInvite = (id: number) => {
-    setGroups((prev) => prev.map((g) => g.id === id ? {
-      ...g, joined: true, invited: false,
-      members: [...g.members, { name: "You", shape: "capybara" as BlobShape, color: "blue" as BlobColor }],
-    } : g));
-    toast({ title: "Joined!", description: "Welcome to the group 🎉" });
+  const removeFriend = async (id: string) => {
+    await friendsStore.remove(id);
+  };
+
+  const createGroup = async () => {
+    const res = await groupsStore.create(groupName, groupSubject);
+    toast({ title: res.ok ? "Group created" : "Couldn't create", description: res.message });
+    if (res.ok) {
+      setGroupName("");
+      setGroupSubject("");
+      setShowCreateGroup(false);
+    }
+  };
+
+  const leaveGroup = async (id: string) => {
+    await groupsStore.leave(id);
+    toast({ title: "Left group" });
   };
 
   const sendSuggestedAlarm = () => {
     if (!suggestForGroup) return;
     toast({
       title: `Alarm suggested to ${suggestForGroup.name}`,
-      description: `${suggestLabel} at ${suggestTime} — members will get a notification to vote.`,
+      description: `${suggestLabel} at ${suggestTime} — members will vote.`,
     });
     setSuggestForGroup(null);
   };
@@ -155,7 +109,7 @@ const CrewPage = () => {
       </div>
 
       <div className="px-6 mt-2">
-        <MascotBubble message="Tap a friend for their profile! Share your friend code to add new buddies, and join study groups to grind together 🤝" />
+        <MascotBubble message="Share your friend code to add buddies, then form study groups to grind together 🤝" />
       </div>
 
       {/* Friend code card */}
@@ -227,58 +181,125 @@ const CrewPage = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="flex flex-col gap-2.5"
+              className="flex flex-col gap-3"
             >
-              {filteredFriends.map((friend) => (
-                <motion.div
-                  key={friend.id}
-                  layout
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedFriend(friend)}
-                  className="flex items-center justify-between bg-card rounded-3xl border border-border p-3 cursor-pointer shadow-soft"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex-shrink-0">
-                      <BlobChar shape={friend.shape} color={friend.color} mood={friend.mood} size={52} bounce={false} />
-                      <span
-                        className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-card ${statusColors[friend.status]}`}
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-bold text-foreground">{friend.name}</p>
-                        <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 rounded-full">Lv.{friend.level}</span>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground font-semibold">
-                        {statusLabels[friend.status]} · 🔥 {friend.streak}d
-                      </p>
-                    </div>
+              {/* Incoming requests */}
+              {incoming.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+                    Friend requests
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {incoming.map((f) => {
+                      const av = avatarFor(f.friendUserId);
+                      return (
+                        <div key={f.id} className="flex items-center justify-between bg-card rounded-3xl border border-border p-3 shadow-soft">
+                          <div className="flex items-center gap-3">
+                            <BlobChar shape={av.shape} color={av.color} mood="happy" size={48} bounce={false} />
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{f.displayName}</p>
+                              <p className="text-[11px] text-muted-foreground font-semibold">Wants to be friends</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => acceptFriend(f.id)}
+                              className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-pop"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => removeFriend(f.id)}
+                              className="p-1.5 rounded-full bg-muted text-muted-foreground"
+                              aria-label="Decline"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
+                </div>
+              )}
 
-                  <div className="flex items-center gap-2">
-                    {friend.status === "idle" && (
-                      <button
-                        onClick={(e) => handleNudge(friend.id, e)}
-                        disabled={nudgedIds.includes(friend.id)}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                          nudgedIds.includes(friend.id)
-                            ? "bg-blob-sage/30 text-blob-sage"
-                            : "bg-blob-yellow/40 text-foreground"
-                        }`}
-                      >
-                        <HandMetal className="w-3.5 h-3.5" />
-                        {nudgedIds.includes(friend.id) ? "Sent!" : "Nudge"}
-                      </button>
-                    )}
-                    {friend.status === "studying" && (
-                      <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-blob-sage/20 text-blob-sage text-xs font-bold">
-                        <Circle className="w-2 h-2 fill-current" /> Live
-                      </span>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              {/* Outgoing pending */}
+              {outgoing.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+                    Pending
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {outgoing.map((f) => {
+                      const av = avatarFor(f.friendUserId);
+                      return (
+                        <div key={f.id} className="flex items-center justify-between bg-card/60 rounded-3xl border border-border p-3">
+                          <div className="flex items-center gap-3">
+                            <BlobChar shape={av.shape} color={av.color} mood="sleepy" size={44} bounce={false} />
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{f.displayName}</p>
+                              <p className="text-[11px] text-muted-foreground font-semibold">Waiting for them to accept</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeFriend(f.id)}
+                            className="text-xs font-bold text-muted-foreground"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
-                </motion.div>
-              ))}
+                </div>
+              )}
+
+              {/* Accepted friends */}
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+                  My friends ({accepted.length})
+                </p>
+                {filteredAccepted.length === 0 ? (
+                  <div className="bg-card rounded-3xl border border-dashed border-border p-6 text-center">
+                    <p className="text-sm font-semibold text-foreground">No friends yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Tap the + button and share friend codes to connect.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {filteredAccepted.map((f) => {
+                      const av = avatarFor(f.friendUserId);
+                      return (
+                        <motion.div
+                          key={f.id}
+                          layout
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setSelectedFriend(f)}
+                          className="flex items-center justify-between bg-card rounded-3xl border border-border p-3 cursor-pointer shadow-soft"
+                        >
+                          <div className="flex items-center gap-3">
+                            <BlobChar shape={av.shape} color={av.color} mood="happy" size={52} bounce={false} />
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{f.displayName}</p>
+                              <p className="text-[11px] text-muted-foreground font-semibold tabular-nums">
+                                {f.friendCode}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeFriend(f.id); }}
+                            className="p-2 rounded-full text-muted-foreground hover:text-destructive"
+                            aria-label="Remove friend"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -288,50 +309,48 @@ const CrewPage = () => {
               exit={{ opacity: 0, x: -20 }}
               className="flex flex-col gap-3"
             >
-              {groups.map((group) => (
-                <div
-                  key={group.id}
-                  className={`bg-card rounded-3xl border border-border p-5 shadow-soft ${
-                    group.active ? "ring-2 ring-primary/30" : ""
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-base font-bold text-foreground">{group.name}</h3>
-                    <div className="flex items-center gap-1">
-                      {group.invited && !group.joined && (
-                        <span className="text-[10px] font-bold bg-warm-gold/20 text-warm-gold px-2 py-0.5 rounded-full">Invited</span>
-                      )}
-                      {group.requested && (
-                        <span className="text-[10px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Requested</span>
-                      )}
-                      {group.active && (
-                        <span className="flex items-center gap-1 bg-primary/15 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold">
-                          <Zap className="w-3 h-3" /> x{group.multiplier}
-                        </span>
-                      )}
+              {groups.length === 0 ? (
+                <div className="bg-card rounded-3xl border border-dashed border-border p-6 text-center">
+                  <p className="text-sm font-semibold text-foreground">No groups yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Create a study group to grind with friends.
+                  </p>
+                </div>
+              ) : (
+                groups.map((group) => (
+                  <div
+                    key={group.id}
+                    className="bg-card rounded-3xl border border-border p-5 shadow-soft"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="text-base font-bold text-foreground">{group.name}</h3>
+                      <span className="flex items-center gap-1 bg-primary/15 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold">
+                        <Zap className="w-3 h-3" /> x{group.multiplier}
+                      </span>
                     </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">{group.subject}</p>
+                    {group.subject && (
+                      <p className="text-xs text-muted-foreground mb-3">{group.subject}</p>
+                    )}
 
-                  <div className="flex items-center gap-1 mb-3">
-                    {group.members.map((m, i) => (
-                      <div key={m.name} className="-ml-2 first:ml-0" style={{ zIndex: group.members.length - i }}>
-                        <div className="rounded-full border-2 border-card bg-cream">
-                          <BlobChar shape={m.shape} color={m.color} mood="happy" size={36} bounce={false} />
-                        </div>
-                      </div>
-                    ))}
-                    <span className="text-[10px] text-muted-foreground font-semibold ml-2">{group.members.length} members</span>
-                  </div>
+                    <div className="flex items-center gap-1 mb-3">
+                      {group.memberIds.slice(0, 5).map((uid, i) => {
+                        const av = avatarFor(uid);
+                        return (
+                          <div key={uid} className="-ml-2 first:ml-0" style={{ zIndex: group.memberIds.length - i }}>
+                            <div className="rounded-full border-2 border-card bg-cream">
+                              <BlobChar shape={av.shape} color={av.color} mood="happy" size={36} bounce={false} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <span className="text-[10px] text-muted-foreground font-semibold ml-2">
+                        {group.memberCount} member{group.memberCount === 1 ? "" : "s"}
+                      </span>
+                    </div>
 
-                  {group.joined ? (
                     <div className="flex gap-2">
-                      <button
-                        className={`flex-1 py-2.5 rounded-full text-xs font-bold ${
-                          group.active ? "bg-primary text-primary-foreground shadow-soft" : "bg-muted text-foreground"
-                        }`}
-                      >
-                        {group.active ? "Join Session" : "Start Session"}
+                      <button className="flex-1 py-2.5 rounded-full text-xs font-bold bg-primary text-primary-foreground shadow-soft">
+                        Start Session
                       </button>
                       <button
                         onClick={() => setSuggestForGroup(group)}
@@ -343,37 +362,32 @@ const CrewPage = () => {
                       <button className="px-3 py-2 rounded-full bg-muted text-muted-foreground" aria-label="Chat">
                         <MessageCircle className="w-4 h-4" />
                       </button>
+                      {group.ownerId !== profile?.id && (
+                        <button
+                          onClick={() => leaveGroup(group.id)}
+                          className="px-3 py-2 rounded-full bg-muted text-muted-foreground"
+                          aria-label="Leave group"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
-                  ) : group.invited ? (
-                    <button
-                      onClick={() => acceptInvite(group.id)}
-                      className="w-full py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-pop flex items-center justify-center gap-1"
-                    >
-                      <LogIn className="w-4 h-4" /> Accept invite
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => requestJoin(group.id)}
-                      disabled={group.requested}
-                      className={`w-full py-2.5 rounded-full text-xs font-bold flex items-center justify-center gap-1 ${
-                        group.requested ? "bg-muted text-muted-foreground" : "bg-secondary text-secondary-foreground shadow-pop"
-                      }`}
-                    >
-                      <Send className="w-4 h-4" /> {group.requested ? "Request pending" : "Request to join"}
-                    </button>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))
+              )}
 
-              <button className="w-full py-3 rounded-3xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground">
-                + Create Study Group
+              <button
+                onClick={() => setShowCreateGroup(true)}
+                className="w-full py-3 rounded-3xl border-2 border-dashed border-border text-sm font-semibold text-muted-foreground flex items-center justify-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" /> Create Study Group
               </button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Friend profile modal */}
+      {/* Friend mini-profile modal */}
       <AnimatePresence>
         {selectedFriend && (
           <motion.div
@@ -395,72 +409,20 @@ const CrewPage = () => {
               <button onClick={() => setSelectedFriend(null)} className="absolute right-5 top-5 bg-muted rounded-full p-1.5">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
-
-              {/* Header */}
-              <div className="text-center mb-5">
-                <div className="relative inline-block">
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blob-pink/30 to-blob-blue/30 flex items-center justify-center mx-auto blob-shape">
-                    <BlobChar shape={selectedFriend.shape} color={selectedFriend.color} mood={selectedFriend.mood} size={96} />
-                  </div>
-                  <span
-                    className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-4 border-card ${statusColors[selectedFriend.status]}`}
-                  />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mt-2">{selectedFriend.name}</h3>
-                <p className="text-xs text-muted-foreground">{selectedFriend.bio}</p>
-                <span className="inline-block mt-1 text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                  Level {selectedFriend.level} · {statusLabels[selectedFriend.status]}
-                </span>
+              <div className="text-center">
+                {(() => {
+                  const av = avatarFor(selectedFriend.friendUserId);
+                  return <BlobChar shape={av.shape} color={av.color} mood="excited" size={96} />;
+                })()}
+                <h3 className="text-xl font-bold text-foreground mt-2">{selectedFriend.displayName}</h3>
+                <p className="text-xs text-muted-foreground tabular-nums">{selectedFriend.friendCode}</p>
               </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-2 mb-5">
-                <div className="bg-blob-coral/15 rounded-2xl p-3 text-center">
-                  <Flame className="w-4 h-4 text-coral mx-auto mb-1" />
-                  <p className="text-lg font-bold text-foreground">{selectedFriend.streak}</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">Streak</p>
-                </div>
-                <div className="bg-blob-yellow/25 rounded-2xl p-3 text-center">
-                  <Star className="w-4 h-4 text-warm-gold mx-auto mb-1" />
-                  <p className="text-lg font-bold text-foreground">{selectedFriend.studyHours}h</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">Study</p>
-                </div>
-                <div className="bg-blob-lavender/25 rounded-2xl p-3 text-center">
-                  <Crown className="w-4 h-4 text-primary mx-auto mb-1" />
-                  <p className="text-lg font-bold text-foreground">#{selectedFriend.id}</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">Rank</p>
-                </div>
-              </div>
-
-              {/* Cosmetics */}
-              <div className="mb-5">
-                <h4 className="text-sm font-bold text-foreground mb-2">Equipped Cosmetics</h4>
-                <div className="flex flex-col gap-1.5">
-                  {Object.entries(selectedFriend.cosmetics).map(([type, val]) => (
-                    <div key={type} className="flex items-center justify-between bg-muted/50 rounded-xl px-3 py-2">
-                      <span className="text-xs font-semibold text-muted-foreground capitalize">{type}</span>
-                      <span className={`text-xs font-bold ${val === "—" ? "text-muted-foreground" : "text-foreground"}`}>
-                        {val}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                {selectedFriend.status === "idle" && (
-                  <button
-                    onClick={(e) => handleNudge(selectedFriend.id, e)}
-                    className="flex-1 py-3 rounded-full bg-blob-yellow/40 text-foreground text-sm font-bold flex items-center justify-center gap-1.5"
-                  >
-                    <HandMetal className="w-4 h-4" /> Nudge
-                  </button>
-                )}
-                <button className="flex-1 py-3 rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-pop">
-                  Invite to Study
-                </button>
-              </div>
+              <button
+                onClick={() => { removeFriend(selectedFriend.id); setSelectedFriend(null); }}
+                className="w-full mt-5 py-3 rounded-full bg-muted text-foreground text-sm font-bold flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" /> Remove friend
+              </button>
             </motion.div>
           </motion.div>
         )}
@@ -501,7 +463,6 @@ const CrewPage = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">Enter their friend code or share yours</p>
               </div>
 
-              {/* Your code */}
               <div className="bg-gradient-to-br from-blob-lavender/25 to-blob-blue/20 border border-border rounded-2xl p-3 mb-4">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Your code</p>
                 <div className="flex items-center justify-between">
@@ -516,7 +477,6 @@ const CrewPage = () => {
                 </div>
               </div>
 
-              {/* Code input */}
               <label className="block text-xs font-bold text-foreground mb-1.5">Friend's code</label>
               <input
                 type="text"
@@ -526,14 +486,73 @@ const CrewPage = () => {
                 maxLength={14}
                 className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-base font-bold tabular-nums text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/40"
               />
-              <p className="text-[10px] text-muted-foreground mt-1.5">Codes are case-insensitive · Format: SYN-XXXX-XXXX</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">Format: SYN-XXXX-XXXX</p>
 
               <button
-                onClick={() => { addFriendByCode(); setShowAddFriend(false); }}
+                onClick={addFriendByCode}
                 disabled={!friendCodeInput.trim()}
                 className="w-full mt-4 py-3 rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-pop disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-1.5"
               >
                 <Send className="w-4 h-4" /> Send friend request
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Group modal */}
+      <AnimatePresence>
+        {showCreateGroup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center"
+            onClick={() => setShowCreateGroup(false)}
+          >
+            <motion.div
+              initial={{ y: 400, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 400, opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-t-[2rem] sm:rounded-3xl w-full max-w-md p-6 pb-10 relative"
+            >
+              <div className="w-10 h-1.5 rounded-full bg-muted mx-auto mb-3 sm:hidden" />
+              <button
+                onClick={() => setShowCreateGroup(false)}
+                className="absolute right-5 top-5 bg-muted rounded-full p-1.5"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-bold text-foreground">Create a study group</h3>
+              </div>
+              <label className="block text-xs font-bold text-foreground mb-1.5">Group name</label>
+              <input
+                type="text"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Math Squad"
+                maxLength={40}
+                className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <label className="block text-xs font-bold text-foreground mt-3 mb-1.5">Subject (optional)</label>
+              <input
+                type="text"
+                value={groupSubject}
+                onChange={(e) => setGroupSubject(e.target.value)}
+                placeholder="Calculus II"
+                maxLength={60}
+                className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                onClick={createGroup}
+                disabled={!groupName.trim()}
+                className="w-full mt-4 py-3 rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-pop disabled:opacity-50 disabled:shadow-none"
+              >
+                Create group
               </button>
             </motion.div>
           </motion.div>
@@ -566,18 +585,16 @@ const CrewPage = () => {
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
-
               <div className="text-center mb-4">
                 <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-blob-yellow/40 to-blob-coral/30 flex items-center justify-center mb-2">
                   <AlarmClock className="w-7 h-7 text-warm-gold" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground">Suggest an alarm</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  to <span className="font-bold text-foreground">{suggestForGroup.name}</span> · {suggestForGroup.members.length} members will vote
+                  to <span className="font-bold text-foreground">{suggestForGroup.name}</span> · {suggestForGroup.memberCount} members
                 </p>
               </div>
 
-              {/* Label */}
               <label className="block text-xs font-bold text-foreground mb-1.5">What for?</label>
               <input
                 type="text"
@@ -587,8 +604,6 @@ const CrewPage = () => {
                 maxLength={40}
                 className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-sm font-semibold text-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-2 focus:ring-primary/40"
               />
-
-              {/* Time */}
               <label className="block text-xs font-bold text-foreground mt-3 mb-1.5">Time</label>
               <input
                 type="time"
@@ -596,38 +611,6 @@ const CrewPage = () => {
                 onChange={(e) => setSuggestTime(e.target.value)}
                 className="w-full bg-background border border-border rounded-2xl px-4 py-3 text-base font-bold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary/40"
               />
-
-              {/* Quick times */}
-              <div className="flex gap-1.5 mt-2 flex-wrap">
-                {["07:00", "09:00", "14:00", "19:00", "21:00"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setSuggestTime(t)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors ${
-                      suggestTime === t
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card border-border text-muted-foreground"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-
-              {/* Member preview */}
-              <div className="mt-4 bg-muted/40 rounded-2xl p-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notifying</p>
-                <div className="flex items-center gap-1">
-                  {suggestForGroup.members.filter((m) => m.name !== "You").map((m, i) => (
-                    <div key={m.name} className="-ml-2 first:ml-0" style={{ zIndex: 10 - i }}>
-                      <div className="rounded-full border-2 border-card bg-cream">
-                        <BlobChar shape={m.shape} color={m.color} mood="happy" size={32} bounce={false} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <button
                 onClick={sendSuggestedAlarm}
                 disabled={!suggestLabel.trim() || !suggestTime}
@@ -639,6 +622,17 @@ const CrewPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating "+" for creating a group in groups tab */}
+      {tab === "groups" && groups.length > 0 && (
+        <button
+          onClick={() => setShowCreateGroup(true)}
+          className="fixed bottom-24 right-6 z-50 w-12 h-12 rounded-full bg-secondary text-secondary-foreground shadow-pop flex items-center justify-center"
+          aria-label="Create group"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+      )}
     </div>
   );
 };

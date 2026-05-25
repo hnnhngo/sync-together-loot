@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { coinsStore } from "@/lib/coins-store";
 import { cosmeticsStore } from "@/lib/cosmetics-store";
 import type { HatKey, OutfitKey, GlassesKey } from "@/components/BlobChar";
@@ -10,12 +11,9 @@ export type QuestRewardKind = "coins" | "accessory";
 
 export interface QuestReward {
   kind: QuestRewardKind;
-  /** coin amount (when kind === "coins") */
   amount?: number;
-  /** accessory slot + key (when kind === "accessory") */
   slot?: "hat" | "outfit" | "glasses";
   accessoryKey?: HatKey | OutfitKey | GlassesKey;
-  /** Friendly label for the reward chip */
   label: string;
 }
 
@@ -27,117 +25,38 @@ export interface Quest {
   metric: QuestMetric;
   goal: number;
   reward: QuestReward;
-  /** emoji shown on the card */
   icon: string;
 }
 
 export interface QuestProgressEntry {
   progress: number;
   claimed: boolean;
-  /** ISO date (YYYY-MM-DD) the daily progress is anchored to. */
   resetOn?: string;
 }
 
 export interface QuestsState {
-  /** Live counters that quests read from. */
   studyHours: number;
   assignments: number;
   alarmsKept: number;
   nudgesSent: number;
   streakDays: number;
-  /** Per-quest progress + claim state. */
   progress: Record<string, QuestProgressEntry>;
 }
 
 export const QUESTS: Quest[] = [
   // ---------- DAILY ----------
-  {
-    id: "daily-study-2h",
-    kind: "daily",
-    title: "Focused Two",
-    description: "Study for 2 hours today.",
-    metric: "studyHours",
-    goal: 2,
-    icon: "📚",
-    reward: { kind: "coins", amount: 50, label: "+50 coins" },
-  },
-  {
-    id: "daily-assignments-3",
-    kind: "daily",
-    title: "Knock 'em Out",
-    description: "Finish 3 assignments today.",
-    metric: "assignments",
-    goal: 3,
-    icon: "✅",
-    reward: { kind: "coins", amount: 75, label: "+75 coins" },
-  },
-  {
-    id: "daily-nudges-2",
-    kind: "daily",
-    title: "Friendly Pings",
-    description: "Send 2 nudges to the crew.",
-    metric: "nudgesSent",
-    goal: 2,
-    icon: "💌",
-    reward: { kind: "coins", amount: 30, label: "+30 coins" },
-  },
-  {
-    id: "daily-alarms-1",
-    kind: "daily",
-    title: "Up & At It",
-    description: "Keep 1 alarm on schedule.",
-    metric: "alarmsKept",
-    goal: 1,
-    icon: "⏰",
-    reward: { kind: "coins", amount: 25, label: "+25 coins" },
-  },
-
+  { id: "daily-study-2h", kind: "daily", title: "Focused Two", description: "Study for 2 hours today.", metric: "studyHours", goal: 2, icon: "📚", reward: { kind: "coins", amount: 50, label: "+50 coins" } },
+  { id: "daily-assignments-3", kind: "daily", title: "Knock 'em Out", description: "Finish 3 assignments today.", metric: "assignments", goal: 3, icon: "✅", reward: { kind: "coins", amount: 75, label: "+75 coins" } },
+  { id: "daily-nudges-2", kind: "daily", title: "Friendly Pings", description: "Send 2 nudges to the crew.", metric: "nudgesSent", goal: 2, icon: "💌", reward: { kind: "coins", amount: 30, label: "+30 coins" } },
+  { id: "daily-alarms-1", kind: "daily", title: "Up & At It", description: "Keep 1 alarm on schedule.", metric: "alarmsKept", goal: 1, icon: "⏰", reward: { kind: "coins", amount: 25, label: "+25 coins" } },
   // ---------- PERMANENT ----------
-  {
-    id: "perm-study-25",
-    kind: "permanent",
-    title: "Quarter Century",
-    description: "Log 25 total study hours.",
-    metric: "studyHours",
-    goal: 25,
-    icon: "🎓",
-    reward: { kind: "accessory", slot: "hat", accessoryKey: "halo", label: "Scholar Halo" },
-  },
-  {
-    id: "perm-study-100",
-    kind: "permanent",
-    title: "Centurion",
-    description: "Log 100 total study hours.",
-    metric: "studyHours",
-    goal: 100,
-    icon: "🏛️",
-    reward: { kind: "accessory", slot: "outfit", accessoryKey: "cape", label: "Sage Cape" },
-  },
-  {
-    id: "perm-assignments-50",
-    kind: "permanent",
-    title: "Task Slayer",
-    description: "Complete 50 assignments.",
-    metric: "assignments",
-    goal: 50,
-    icon: "⚔️",
-    reward: { kind: "coins", amount: 500, label: "+500 coins" },
-  },
-  {
-    id: "perm-streak-30",
-    kind: "permanent",
-    title: "Iron Will",
-    description: "Reach a 30-day streak.",
-    metric: "streakDays",
-    goal: 30,
-    icon: "🔥",
-    reward: { kind: "accessory", slot: "glasses", accessoryKey: "shades", label: "Legend Shades" },
-  },
+  { id: "perm-study-25", kind: "permanent", title: "Quarter Century", description: "Log 25 total study hours.", metric: "studyHours", goal: 25, icon: "🎓", reward: { kind: "accessory", slot: "hat", accessoryKey: "halo", label: "Scholar Halo" } },
+  { id: "perm-study-100", kind: "permanent", title: "Centurion", description: "Log 100 total study hours.", metric: "studyHours", goal: 100, icon: "🏛️", reward: { kind: "accessory", slot: "outfit", accessoryKey: "cape", label: "Sage Cape" } },
+  { id: "perm-assignments-50", kind: "permanent", title: "Task Slayer", description: "Complete 50 assignments.", metric: "assignments", goal: 50, icon: "⚔️", reward: { kind: "coins", amount: 500, label: "+500 coins" } },
+  { id: "perm-streak-30", kind: "permanent", title: "Iron Will", description: "Reach a 30-day streak.", metric: "streakDays", goal: 30, icon: "🔥", reward: { kind: "accessory", slot: "glasses", accessoryKey: "shades", label: "Legend Shades" } },
 ];
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
-
-const STORAGE_KEY = "syn.quests.progress.v1";
 
 const buildInitialProgress = (): Record<string, QuestProgressEntry> => {
   const today = todayKey();
@@ -148,70 +67,48 @@ const buildInitialProgress = (): Record<string, QuestProgressEntry> => {
   return out;
 };
 
-/**
- * Load persisted progress from localStorage and merge with defaults.
- * Daily quests whose `resetOn` is not today have their `claimed` flag reset.
- * Permanent quests keep their claimed state forever.
- */
-const loadPersistedProgress = (): Record<string, QuestProgressEntry> => {
-  const base = buildInitialProgress();
-  if (typeof window === "undefined") return base;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return base;
-    const saved = JSON.parse(raw) as Record<string, QuestProgressEntry>;
-    const today = todayKey();
-    for (const q of QUESTS) {
-      const s = saved[q.id];
-      if (!s) continue;
-      if (q.kind === "daily") {
-        if (s.resetOn === today) {
-          base[q.id] = { ...s, resetOn: today };
-        } else {
-          // new day — reset claimed/progress for daily quests
-          base[q.id] = { progress: 0, claimed: false, resetOn: today };
-        }
-      } else {
-        // permanent quests retain claimed state
-        base[q.id] = { progress: s.progress ?? 0, claimed: !!s.claimed };
-      }
-    }
-  } catch {
-    // ignore corrupt storage
-  }
-  return base;
-};
-
-const persistProgress = (progress: Record<string, QuestProgressEntry>) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  } catch {
-    // ignore quota / privacy errors
-  }
-};
-
 let state: QuestsState = {
   studyHours: 1.5,
   assignments: 1,
   alarmsKept: 0,
   nudgesSent: 1,
   streakDays: 3,
-  progress: loadPersistedProgress(),
+  progress: buildInitialProgress(),
 };
 
-// seed initial progress to match the live counters above so the demo feels alive
-// (but DO NOT overwrite a persisted `claimed` flag — claims are once-per-day)
-for (const q of QUESTS) {
-  const cur = state[q.metric];
-  const prev = state.progress[q.id];
-  state.progress[q.id] = { ...prev, progress: Math.min(cur, q.goal) };
-}
-
+let currentUserId: string | null = null;
 const listeners = new Set<() => void>();
-const emit = () => {
-  persistProgress(state.progress);
-  listeners.forEach((l) => l());
+const emit = () => listeners.forEach((l) => l());
+
+// Debounced per-quest upserts to DB
+const pendingPush = new Set<string>();
+let pushTimer: ReturnType<typeof setTimeout> | null = null;
+const schedulePush = (questId: string) => {
+  if (!currentUserId) return;
+  pendingPush.add(questId);
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    const ids = Array.from(pendingPush);
+    pendingPush.clear();
+    if (!currentUserId) return;
+    const rows = ids
+      .map((id) => {
+        const q = QUESTS.find((x) => x.id === id);
+        const entry = state.progress[id];
+        if (!q || !entry) return null;
+        return {
+          user_id: currentUserId,
+          quest_id: id,
+          progress: entry.progress,
+          claimed: entry.claimed,
+          reset_on: q.kind === "daily" ? todayKey() : null,
+        };
+      })
+      .filter(Boolean);
+    if (rows.length) {
+      await supabase.from("user_quest_progress").upsert(rows as any, { onConflict: "user_id,quest_id" });
+    }
+  }, 500);
 };
 
 const recomputeProgress = () => {
@@ -236,21 +133,89 @@ export const questsStore = {
   getState: () => state,
   subscribe: (l: () => void) => {
     listeners.add(l);
-    return () => listeners.delete(l);
+    return () => {
+      listeners.delete(l);
+    };
   },
-  /** Increment any underlying metric. Pass negative numbers to decrement. */
+
+  async loadForUser(userId: string | null) {
+    currentUserId = userId;
+    if (!userId) {
+      state = { ...state, progress: buildInitialProgress() };
+      emit();
+      return;
+    }
+
+    const today = todayKey();
+
+    // Check user_daily_status for last quest reset date
+    const { data: status } = await supabase
+      .from("user_daily_status")
+      .select("last_quest_reset_date")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const needsDailyReset = !status || status.last_quest_reset_date !== today;
+
+    if (needsDailyReset) {
+      // Hard reset: delete daily quest rows (regardless of claim status) — they will be re-created on bump/claim.
+      const dailyIds = QUESTS.filter((q) => q.kind === "daily").map((q) => q.id);
+      await supabase
+        .from("user_quest_progress")
+        .delete()
+        .eq("user_id", userId)
+        .in("quest_id", dailyIds);
+      await supabase
+        .from("user_daily_status")
+        .upsert(
+          { user_id: userId, last_quest_reset_date: today },
+          { onConflict: "user_id" },
+        );
+    }
+
+    // Load remaining progress
+    const { data: rows } = await supabase
+      .from("user_quest_progress")
+      .select("quest_id, progress, claimed, reset_on")
+      .eq("user_id", userId);
+
+    const progress = buildInitialProgress();
+    (rows ?? []).forEach((r) => {
+      const q = QUESTS.find((x) => x.id === r.quest_id);
+      if (!q) return;
+      progress[r.quest_id] = {
+        progress: Number(r.progress) || 0,
+        claimed: !!r.claimed,
+        resetOn: q.kind === "daily" ? (r.reset_on as string | null) ?? today : undefined,
+      };
+    });
+
+    state = { ...state, progress };
+    recomputeProgress();
+    emit();
+  },
+
   bump: (metric: QuestMetric, delta: number) => {
     state = { ...state, [metric]: Math.max(0, state[metric] + delta) };
+    const before = { ...state.progress };
     recomputeProgress();
+    // Push any quest whose progress actually changed
+    for (const q of QUESTS) {
+      if (state.progress[q.id]?.progress !== before[q.id]?.progress) schedulePush(q.id);
+    }
     emit();
   },
-  /** Sync the streakDays metric from the home page. */
+
   setStreak: (n: number) => {
     state = { ...state, streakDays: Math.max(0, Math.round(n)) };
+    const before = { ...state.progress };
     recomputeProgress();
+    for (const q of QUESTS) {
+      if (state.progress[q.id]?.progress !== before[q.id]?.progress) schedulePush(q.id);
+    }
     emit();
   },
-  /** Claim the reward if quest is complete and not yet claimed. */
+
   claim: (questId: string): { ok: boolean; message: string } => {
     const q = QUESTS.find((x) => x.id === questId);
     if (!q) return { ok: false, message: "Quest not found" };
@@ -263,11 +228,11 @@ export const questsStore = {
     } else if (q.reward.kind === "accessory" && q.reward.slot && q.reward.accessoryKey) {
       cosmeticsStore.addAccessory(q.reward.slot, q.reward.accessoryKey as string);
     }
-
     state = {
       ...state,
       progress: { ...state.progress, [questId]: { ...entry, claimed: true } },
     };
+    schedulePush(questId);
     emit();
     return { ok: true, message: `Reward claimed: ${q.reward.label}` };
   },

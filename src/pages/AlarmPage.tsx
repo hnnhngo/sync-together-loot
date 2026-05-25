@@ -6,19 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import MascotBubble from "@/components/MascotBubble";
 import { questsStore } from "@/lib/quests-store";
-
-type DayId = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-
-interface Alarm {
-  id: number;
-  label: string;
-  hour: number;
-  minute: number;
-  buffer: number;
-  syncWith: string | null;
-  enabled: boolean;
-  days: DayId[];
-}
+import { alarmsStore, useAlarms, type DayId } from "@/lib/alarms-store";
 
 const dayList: { id: DayId; label: string }[] = [
   { id: "mon", label: "M" },
@@ -28,12 +16,6 @@ const dayList: { id: DayId; label: string }[] = [
   { id: "fri", label: "F" },
   { id: "sat", label: "S" },
   { id: "sun", label: "S" },
-];
-
-const initialAlarms: Alarm[] = [
-  { id: 1, label: "Math Exam Prep", hour: 8, minute: 0, buffer: 60, syncWith: "Alex", enabled: true, days: ["mon", "wed", "fri"] },
-  { id: 2, label: "Essay Deadline", hour: 14, minute: 30, buffer: 30, syncWith: null, enabled: true, days: ["tue"] },
-  { id: 3, label: "Study Group", hour: 19, minute: 0, buffer: 45, syncWith: "Crew", enabled: false, days: ["mon", "tue", "wed", "thu", "fri"] },
 ];
 
 const formatTime = (h: number, m: number) =>
@@ -325,48 +307,36 @@ const BufferSlider = ({
 
 const AlarmPage = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [alarms, setAlarms] = useState<Alarm[]>(initialAlarms);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const { alarms } = useAlarms();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(true);
 
-  const toggleAlarm = (id: number) =>
-    setAlarms((prev) =>
-      prev.map((a) => {
-        if (a.id !== id) return a;
-        const next = !a.enabled;
-        if (next) questsStore.bump("alarmsKept", 1);
-        return { ...a, enabled: next };
-      }),
-    );
-
-  const updateLabel = (id: number, label: string) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, label } : a)));
-
-  const updateTime = (id: number, h: number, m: number) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, hour: h, minute: m } : a)));
-
-  const updateBuffer = (id: number, v: number) =>
-    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, buffer: v } : a)));
-
-  const toggleDay = (id: number, day: DayId) =>
-    setAlarms((prev) =>
-      prev.map((a) =>
-        a.id === id
-          ? { ...a, days: a.days.includes(day) ? a.days.filter((d) => d !== day) : [...a.days, day] }
-          : a
-      )
-    );
-
-  const deleteAlarm = (id: number) => setAlarms((prev) => prev.filter((a) => a.id !== id));
-
-  const addAlarm = () => {
-    const newId = Math.max(0, ...alarms.map((a) => a.id)) + 1;
-    setAlarms((prev) => [
-      ...prev,
-      { id: newId, label: "New Alarm", hour: 12, minute: 0, buffer: 60, syncWith: null, enabled: true, days: [] },
-    ]);
-    setExpandedId(newId);
+  const toggleAlarm = (id: string) => {
+    const a = alarms.find((x) => x.id === id);
+    if (!a) return;
+    const next = !a.enabled;
+    if (next) questsStore.bump("alarmsKept", 1);
+    alarmsStore.update(id, { enabled: next });
   };
+
+  const updateLabel = (id: string, label: string) => alarmsStore.update(id, { label });
+  const updateTime = (id: string, h: number, m: number) => alarmsStore.update(id, { hour: h, minute: m });
+  const updateBuffer = (id: string, v: number) => alarmsStore.update(id, { buffer: v });
+
+  const toggleDay = (id: string, day: DayId) => {
+    const a = alarms.find((x) => x.id === id);
+    if (!a) return;
+    const days = a.days.includes(day) ? a.days.filter((d) => d !== day) : [...a.days, day];
+    alarmsStore.update(id, { days });
+  };
+
+  const deleteAlarm = (id: string) => alarmsStore.remove(id);
+
+  const addAlarm = async () => {
+    const a = await alarmsStore.add();
+    if (a) setExpandedId(a.id);
+  };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -437,9 +407,9 @@ const AlarmPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {alarm.syncWith && (
+                  {alarm.sync_with && (
                     <span className="flex items-center gap-1 bg-secondary/15 text-secondary px-2 py-0.5 rounded-full text-[10px] font-semibold">
-                      <Users className="w-3 h-3" /> {alarm.syncWith}
+                      <Users className="w-3 h-3" /> {alarm.sync_with}
                     </span>
                   )}
                   <div onClick={(e) => e.stopPropagation()}>
@@ -519,7 +489,7 @@ const AlarmPage = () => {
                         <div className="flex items-center gap-2">
                           <Bell className="w-4 h-4 text-muted-foreground" />
                           <p className="text-xs text-muted-foreground">
-                            {alarm.syncWith ? `Synced with ${alarm.syncWith}` : "Solo alarm"}
+                            {alarm.sync_with ? `Synced with ${alarm.sync_with}` : "Solo alarm"}
                           </p>
                         </div>
                         <button onClick={() => deleteAlarm(alarm.id)} className="text-destructive">
