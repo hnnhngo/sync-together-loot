@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      alarms: {
+        Row: {
+          buffer: number
+          created_at: string
+          days: string[]
+          enabled: boolean
+          hour: number
+          id: string
+          label: string
+          minute: number
+          sync_with: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buffer?: number
+          created_at?: string
+          days?: string[]
+          enabled?: boolean
+          hour?: number
+          id?: string
+          label?: string
+          minute?: number
+          sync_with?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buffer?: number
+          created_at?: string
+          days?: string[]
+          enabled?: boolean
+          hour?: number
+          id?: string
+          label?: string
+          minute?: number
+          sync_with?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_user_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_user_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_user_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -47,12 +145,97 @@ export type Database = {
         }
         Relationships: []
       }
+      study_groups: {
+        Row: {
+          created_at: string
+          id: string
+          multiplier: number
+          name: string
+          owner_id: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          multiplier?: number
+          name: string
+          owner_id: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          multiplier?: number
+          name?: string
+          owner_id?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_daily_status: {
+        Row: {
+          last_quest_reset_date: string | null
+          last_reward_claim_date: string | null
+          reward_day: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          last_quest_reset_date?: string | null
+          last_reward_claim_date?: string | null
+          reward_day?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          last_quest_reset_date?: string | null
+          last_reward_claim_date?: string | null
+          reward_day?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_quest_progress: {
+        Row: {
+          claimed: boolean
+          progress: number
+          quest_id: string
+          reset_on: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed?: boolean
+          progress?: number
+          quest_id: string
+          reset_on?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed?: boolean
+          progress?: number
+          quest_id?: string
+          reset_on?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       generate_friend_code: { Args: never; Returns: string }
+      is_group_member: {
+        Args: { _gid: string; _uid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
