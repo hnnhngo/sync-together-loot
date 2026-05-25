@@ -6,7 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import MascotBubble from "@/components/MascotBubble";
 import { questsStore } from "@/lib/quests-store";
-import { alarmsStore, useAlarms, type DayId, type Alarm } from "@/lib/alarms-store";
+import { alarmsStore, useAlarms, type DayId } from "@/lib/alarms-store";
+
+const dayList: { id: DayId; label: string }[] = [
+  { id: "mon", label: "M" },
+  { id: "tue", label: "T" },
+  { id: "wed", label: "W" },
+  { id: "thu", label: "T" },
+  { id: "fri", label: "F" },
+  { id: "sat", label: "S" },
+  { id: "sun", label: "S" },
+];
 
 const formatTime = (h: number, m: number) =>
   `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
