@@ -46,18 +46,21 @@ const HomePage = () => {
     questsStore.setStreak(streak);
   }, [streak]);
 
-  // Show tutorial on first ever visit (until user dismisses).
+  // Show tutorial only on first ever login for this account (DB-backed flag).
   useEffect(() => {
-    if (!cosmetics.tutorialDone) {
+    if (profile && !profile.has_completed_tutorial) {
       const t = setTimeout(() => setShowTutorial(true), 600);
       return () => clearTimeout(t);
     }
-  }, [cosmetics.tutorialDone]);
+  }, [profile?.id, profile?.has_completed_tutorial]);
 
-  const closeTutorial = () => {
+  const closeTutorial = async () => {
     setShowTutorial(false);
-    if (!cosmetics.tutorialDone) cosmeticsStore.set({ tutorialDone: true });
+    if (profile && !profile.has_completed_tutorial) {
+      await profileStore.completeTutorial();
+    }
   };
+
 
   const handleClaim = async () => {
     if (!canClaimToday) return;
