@@ -114,34 +114,61 @@ export type Database = {
       }
       profiles: {
         Row: {
+          coins: number
           created_at: string
+          crew_rank: number
           current_streak: number
           display_name: string | null
           email: string | null
           friend_code: string | null
+          has_completed_tutorial: boolean
           id: string
+          level: number
+          nudges_sent: number
           purchased_accessories: Json
+          score: number
+          study_hours: number
+          tasks_done: number
           updated_at: string
+          wins: number
         }
         Insert: {
+          coins?: number
           created_at?: string
+          crew_rank?: number
           current_streak?: number
           display_name?: string | null
           email?: string | null
           friend_code?: string | null
+          has_completed_tutorial?: boolean
           id: string
+          level?: number
+          nudges_sent?: number
           purchased_accessories?: Json
+          score?: number
+          study_hours?: number
+          tasks_done?: number
           updated_at?: string
+          wins?: number
         }
         Update: {
+          coins?: number
           created_at?: string
+          crew_rank?: number
           current_streak?: number
           display_name?: string | null
           email?: string | null
           friend_code?: string | null
+          has_completed_tutorial?: boolean
           id?: string
+          level?: number
+          nudges_sent?: number
           purchased_accessories?: Json
+          score?: number
+          study_hours?: number
+          tasks_done?: number
           updated_at?: string
+          wins?: number
         }
         Relationships: []
       }
@@ -231,6 +258,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_tutorial: {
+        Args: never
+        Returns: {
+          coins: number
+          has_completed_tutorial: boolean
+        }[]
+      }
       generate_friend_code: { Args: never; Returns: string }
       is_group_member: {
         Args: { _gid: string; _uid: string }

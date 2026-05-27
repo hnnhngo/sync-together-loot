@@ -77,12 +77,12 @@ export const friendsStore = {
 
   async addByCode(code: string): Promise<{ ok: boolean; message: string }> {
     if (!currentUserId) return { ok: false, message: "Not signed in" };
-    const normalized = code.trim().toUpperCase();
+    const normalized = code.trim();
     if (!normalized) return { ok: false, message: "Enter a code" };
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, display_name, friend_code")
-      .eq("friend_code", normalized)
+      .ilike("friend_code", normalized)
       .maybeSingle();
     if (!profile) return { ok: false, message: "No user with that code" };
     if (profile.id === currentUserId) return { ok: false, message: "That's your own code!" };
