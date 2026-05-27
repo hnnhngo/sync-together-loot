@@ -411,10 +411,10 @@ const HomePage = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Tasks Done", value: "24", color: "pink" as const, shape: "bunny" as const, mood: "excited" as const, bg: "bg-blob-pink/25" },
-            { label: "Study Hours", value: "18.5h", color: "mint" as const, shape: "frog" as const, mood: "happy" as const, bg: "bg-blob-mint/25" },
-            { label: "Crew Rank", value: "#3", color: "yellow" as const, shape: "chick" as const, mood: "wink" as const, bg: "bg-blob-yellow/30" },
-            { label: "Nudges Sent", value: "12", color: "lavender" as const, shape: "bear" as const, mood: "happy" as const, bg: "bg-blob-lavender/25" },
+            { label: "Tasks Done", value: String(profile?.tasks_done ?? 0), color: "pink" as const, shape: "bunny" as const, mood: "excited" as const, bg: "bg-blob-pink/25" },
+            { label: "Study Hours", value: `${(profile?.study_hours ?? 0).toFixed(1)}h`, color: "mint" as const, shape: "frog" as const, mood: "happy" as const, bg: "bg-blob-mint/25" },
+            { label: "Crew Rank", value: profile?.crew_rank ? `#${profile.crew_rank}` : "—", color: "yellow" as const, shape: "chick" as const, mood: "wink" as const, bg: "bg-blob-yellow/30" },
+            { label: "Nudges Sent", value: String(profile?.nudges_sent ?? 0), color: "lavender" as const, shape: "bear" as const, mood: "happy" as const, bg: "bg-blob-lavender/25" },
           ].map((s) => (
             <motion.div
               key={s.label}
