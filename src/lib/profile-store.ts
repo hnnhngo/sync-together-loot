@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cosmeticsStore, type CosmeticsState } from "@/lib/cosmetics-store";
+import { coinsStore } from "@/lib/coins-store";
 
 export interface ProfileData {
   id: string;
@@ -9,6 +10,15 @@ export interface ProfileData {
   purchased_accessories: Record<string, unknown>;
   display_name: string | null;
   email: string | null;
+  coins: number;
+  has_completed_tutorial: boolean;
+  wins: number;
+  level: number;
+  score: number;
+  tasks_done: number;
+  study_hours: number;
+  crew_rank: number;
+  nudges_sent: number;
 }
 
 interface ProfileStoreState {
@@ -57,6 +67,28 @@ const schedulePushAccessories = () => {
   }, 600);
 };
 
+const PROFILE_COLUMNS =
+  "id, friend_code, current_streak, purchased_accessories, display_name, email, coins, has_completed_tutorial, wins, level, score, tasks_done, study_hours, crew_rank, nudges_sent";
+
+const rowToProfile = (data: Record<string, unknown>): ProfileData => ({
+  id: data.id as string,
+  friend_code: (data.friend_code as string | null) ?? null,
+  current_streak: (data.current_streak as number) ?? 0,
+  purchased_accessories:
+    (data.purchased_accessories as Record<string, unknown> | null) ?? {},
+  display_name: (data.display_name as string | null) ?? null,
+  email: (data.email as string | null) ?? null,
+  coins: (data.coins as number) ?? 0,
+  has_completed_tutorial: (data.has_completed_tutorial as boolean) ?? false,
+  wins: (data.wins as number) ?? 0,
+  level: (data.level as number) ?? 1,
+  score: (data.score as number) ?? 0,
+  tasks_done: (data.tasks_done as number) ?? 0,
+  study_hours: Number(data.study_hours ?? 0),
+  crew_rank: (data.crew_rank as number) ?? 0,
+  nudges_sent: (data.nudges_sent as number) ?? 0,
+});
+
 export const profileStore = {
   getState: () => state,
   subscribe: (l: () => void) => {
@@ -66,9 +98,7 @@ export const profileStore = {
     };
   },
 
-  /** Called by ProfileSync when the auth user changes. */
   async loadForUser(userId: string | null) {
-    // Cleanup existing subscription
     if (unsubCosmetics) {
       unsubCosmetics();
       unsubCosmetics = null;
@@ -77,6 +107,7 @@ export const profileStore = {
 
     if (!userId) {
       state = { loading: false, profile: null };
+      coinsStore.hydrate(null, 0);
       emit();
       return;
     }
@@ -86,7 +117,7 @@ export const profileStore = {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, friend_code, current_streak, purchased_accessories, display_name, email")
+      .select(PROFILE_COLUMNS)
       .eq("id", userId)
       .maybeSingle();
 
@@ -96,48 +127,75 @@ export const profileStore = {
       return;
     }
 
-    // Ensure friend code exists (legacy rows safety net)
-    let friendCode = data.friend_code;
-    if (!friendCode) {
-      friendCode = await ensureFriendCode(userId);
+    let profile = rowToProfile(data as Record<string, unknown>);
+
+    if (!profile.friend_code) {
+      const code = await ensureFriendCode(userId);
+      profile = { ...profile, friend_code: code };
     }
 
-    const profile: ProfileData = {
-      id: data.id,
-      friend_code: friendCode,
-      current_streak: data.current_streak ?? 0,
-      purchased_accessories:
-        (data.purchased_accessories as Record<string, unknown> | null) ?? {},
-      display_name: data.display_name,
-      email: data.email,
-    };
+    // Hydrate dependent stores.
+    coinsStore.hydrate(userId, profile.coins);
 
-    // Hydrate cosmetics store from DB snapshot (without re-pushing).
     suppressPush = true;
     const snap = profile.purchased_accessories as Partial<CosmeticsState>;
     if (snap && Object.keys(snap).length > 0) {
       cosmeticsStore.set(snap);
     }
     suppressPush = false;
-
-    // Subscribe cosmetics changes -> push to DB
     unsubCosmetics = cosmeticsStore.subscribe(schedulePushAccessories);
 
     state = { loading: false, profile };
     emit();
   },
 
+  /** Refresh profile from DB (used after server-side mutations like RPCs). */
+  async refresh() {
+    if (!currentUserId) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select(PROFILE_COLUMNS)
+      .eq("id", currentUserId)
+      .maybeSingle();
+    if (!data) return;
+    const profile = rowToProfile(data as Record<string, unknown>);
+    coinsStore.hydrate(currentUserId, profile.coins);
+    state = { ...state, profile };
+    emit();
+  },
+
   async setStreak(value: number) {
     if (!currentUserId || !state.profile) return;
-    state = {
-      ...state,
-      profile: { ...state.profile, current_streak: value },
-    };
+    state = { ...state, profile: { ...state.profile, current_streak: value } };
     emit();
-    await supabase
-      .from("profiles")
-      .update({ current_streak: value })
-      .eq("id", currentUserId);
+    await supabase.from("profiles").update({ current_streak: value }).eq("id", currentUserId);
+  },
+
+  /** Update any homepage stat field for the current user. */
+  async updateStats(patch: Partial<Pick<ProfileData, "wins" | "level" | "score" | "tasks_done" | "study_hours" | "crew_rank" | "nudges_sent">>) {
+    if (!currentUserId || !state.profile) return;
+    state = { ...state, profile: { ...state.profile, ...patch } };
+    emit();
+    await supabase.from("profiles").update(patch).eq("id", currentUserId);
+  },
+
+  /** One-time tutorial completion: flips flag + grants +500 coins (server-side, idempotent). */
+  async completeTutorial(): Promise<{ ok: boolean; granted: boolean }> {
+    if (!currentUserId || !state.profile) return { ok: false, granted: false };
+    if (state.profile.has_completed_tutorial) return { ok: true, granted: false };
+    const { data, error } = await supabase.rpc("complete_tutorial");
+    if (error) return { ok: false, granted: false };
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) {
+      const newCoins = (row as { coins: number }).coins;
+      coinsStore.hydrate(currentUserId, newCoins);
+      state = {
+        ...state,
+        profile: { ...state.profile, has_completed_tutorial: true, coins: newCoins },
+      };
+      emit();
+    }
+    return { ok: true, granted: true };
   },
 
   async regenerateFriendCode() {
@@ -163,7 +221,6 @@ async function ensureFriendCode(userId: string): Promise<string> {
 }
 
 async function generateLocalFriendCode(): Promise<string> {
-  // Client-side generator; uniqueness enforced by DB unique index — retry on conflict.
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const rand = (n: number) =>
     Array.from({ length: n }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
