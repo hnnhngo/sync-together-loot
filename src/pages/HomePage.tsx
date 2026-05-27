@@ -5,7 +5,7 @@ import MascotBubble from "@/components/MascotBubble";
 import BlobChar from "@/components/BlobChar";
 import QuestsPanel from "@/components/QuestsPanel";
 import Tutorial from "@/components/Tutorial";
-import { cosmeticsStore, useCosmetics, STREAK_COLORS, pickDailyStreakColor } from "@/lib/cosmetics-store";
+import { useCosmetics, STREAK_COLORS, pickDailyStreakColor } from "@/lib/cosmetics-store";
 import { useCoins, coinsStore } from "@/lib/coins-store";
 import { findVariant } from "@/lib/accessory-variants";
 import { questsStore } from "@/lib/quests-store";
